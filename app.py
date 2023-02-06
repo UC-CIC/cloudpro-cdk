@@ -3,11 +3,20 @@ import os
 
 import aws_cdk as cdk
 
-from cloudpro_cdk.cloudpro_cdk_stack import CloudproCdkStack
-
+from cloudpro_cdk.scoring_safety import ScoringSafety
+from cloudpro_cdk.propack_loader import ProPackLoaderStack
+from cloudpro_cdk.ebus import EventBus
 
 app = cdk.App()
-CloudproCdkStack(app, "CloudproCdkStack",
+pro_bus=EventBus(app, "cdk-event-bus-stack")
+scoring_safety=ScoringSafety(app, "cdk-scoring-safety-stack")
+propack_loader=ProPackLoaderStack(app, "cdk-pro-loader-stack",pro_bus=pro_bus.ebus)
+
+app.synth()
+
+
+'''
+LoremStack(app, "cdk-lorem-ipsum",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
@@ -24,5 +33,4 @@ CloudproCdkStack(app, "CloudproCdkStack",
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )
-
-app.synth()
+'''
