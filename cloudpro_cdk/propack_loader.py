@@ -50,6 +50,7 @@ class ProPackLoaderStack(Stack):
             }
         )
 
+        bucket_propack.grant_read_write(fn_propack_loader)
 
         # s3.EventType.OBJECT_CREATED
         rule_propack_new = events.Rule(self, "cdk-rule-propack-new",
