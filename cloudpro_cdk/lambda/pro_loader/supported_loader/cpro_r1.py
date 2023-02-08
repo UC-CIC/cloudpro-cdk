@@ -47,7 +47,7 @@ def load( mode:str, pro_pack_format:str, pro_pack_name:str, path:str, pro_pack_q
         questionnaire_json=read_questionnaire_from_file(path,pro_pack_question_file)
     if( mode == "S3" ):
         formula=""
-        questionnaire_json=read_questionnaire_from_s3(pro_pack_name,pro_pack_question_file,path,pro_pack_question_file)
+        questionnaire_json=read_questionnaire_from_s3(pro_pack_name,pro_pack_question_file,path,bucket,s3_resource)
         
     scoring["pro_pack"] = pro_pack_hash
     scoring["pro_pack_format"] = pro_pack_format

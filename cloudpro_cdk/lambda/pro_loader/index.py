@@ -67,38 +67,31 @@ def handler(event,context):
    #################################################
 
     print("<<< LOG ME >>>")
+    print(event)
 
-
-    # Get format of propack
+    #### Get format of propack
     s3_bucket=event["detail"]["bucket"]
     propack_name=event["detail"]["propack"]
 
-    propack_key= propack_name + "/pack.config"
+    propack_key= propack_name + "/pack.config" 
 
-
-    print("[s3_bucket] | "  + s3_bucket)
-    print("[propack_name] | "  + propack_name)
-    print("[propack_key] | "+ propack_key )
-    
-
+    #### Read propack config
     config_file = s3_resource.Object(bucket_name=s3_bucket, key=propack_key)
     config_file_contents = config_file.get()['Body'].read()
     config = configparser.ConfigParser()
+    config.read_string(config_file_contents.decode())
     
-    propack_format=config.read_string(config_file_contents.decode())
-
-    print('config["MAIN"]["FORMAT"] | ' + config["MAIN"]["FORMAT"])
+    propack_format=config["MAIN"]["FORMAT"]
 
 
-    # Load handler for format
-
+    #### Load file via handler of format specified in config
     # make sure we have bucket name in S3 Mode
     if mode==SupportedModes.s3_mode and s3_bucket is None:
         return {
             'statusCode': 200,
             'body': json.dumps('<<<<<<<<<<<<<<< ERROR: Invalid Mode Combo >>>>>>>>>>>>>>>')
         }
-    
+
     # make sure format value is a valid format
     if not config["MAIN"]["FORMAT"] in SupportedFormats.list():
         return {
@@ -120,12 +113,8 @@ def handler(event,context):
         )
         print(load_data)
     except Exception as e:
-        pass
+        print("EXCEPTION: ",e)
 
-
-    
-    print( "I AM LOADER")
-    print(event)
     print("<<< LOG ME >>>")
     return {
         'statusCode': 200,
