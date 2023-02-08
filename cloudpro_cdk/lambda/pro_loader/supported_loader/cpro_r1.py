@@ -46,7 +46,7 @@ def load( mode:str, pro_pack_format:str, pro_pack_name:str, path:str, pro_pack_q
         formula=read_scoring_from_file(path,pro_pack_scoring_file)
         questionnaire_json=read_questionnaire_from_file(path,pro_pack_question_file)
     if( mode == "S3" ):
-        formula=""
+        formula=read_scoring_from_s3(pro_pack_name,pro_pack_scoring_file,path,bucket,s3_resource)
         questionnaire_json=read_questionnaire_from_s3(pro_pack_name,pro_pack_question_file,path,bucket,s3_resource)
         
     scoring["pro_pack"] = pro_pack_hash
@@ -80,6 +80,29 @@ def read_questionnaire_from_s3(pro_pack_name,pro_pack_question_file,path:str,buc
     questionnaire_file=s3_resource.Object(bucket_name=bucket, key=questionnaire_key)
     questionnaire_contents = questionnaire_file.get()['Body'].read()
     return json.loads(questionnaire_contents)
+
+def read_scoring_from_s3(pro_pack_name,pro_pack_scoring_file,path:str,bucket:str,s3_resource):
+    config = configparser.ConfigParser()
+    scoring_key=pro_pack_name + path + pro_pack_scoring_file
+
+    try:
+        scoring_file=s3_resource.Object(bucket_name=bucket, key=scoring_key)
+        scoring_contents = scoring_file.get()['Body'].read()
+        config.read_string(scoring_contents.decode())
+    except Exception as e:
+        raise Exception(f"File not found: {e}")
+
+    try:
+        sanitized_formula_set = []
+
+        for section in config.sections():
+            sanitized = ScoringSafety(config[section]["formula"])
+            sanitized_formula = { "link_id": section, "formula": sanitized.formula }
+            sanitized_formula_set.append(sanitized_formula)
+
+        return sanitized_formula_set
+    except Exception as e:
+        raise( e )
 
 
 def read_questionnaire_from_file(path:str,filename:str):
