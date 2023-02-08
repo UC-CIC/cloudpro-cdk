@@ -42,6 +42,7 @@ def handler(event,context):
     print("[pro_name] | " + pro_name)
 
     detail_json = {
+        "bucket": source_bucket,
         "propack": prefix + pro_name,
         "status":"extracted"
     }

@@ -121,9 +121,14 @@ class ProPack(Stack):
                 "TABLE_QUESTIONNAIRE":dynamo_propack_questionnaire.table_name,
                 "TABLE_SCORING":dynamo_propack_scoring.table_name,
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
-                "IDENTIFIER":SOURCE_PROPACK_EXTRACTOR
+                "IDENTIFIER":SOURCE_PROPACK_LOADER
             }
         )
+
+        bucket_propack.grant_read(fn_propack_loader)
+        dynamo_propack_questionnaire.grant_write_data(fn_propack_loader)
+        dynamo_propack_scoring.grant_write_data(fn_propack_loader)
+
 
         ##########################################################################################################
         ##############################################################################
