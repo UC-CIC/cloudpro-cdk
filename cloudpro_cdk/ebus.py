@@ -12,12 +12,12 @@ class EventBus(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
 
-        ebus = events.EventBus(self, "cdk-ebus-cloudpro",
-            event_bus_name="cdk-ebus-cloudpro"
+        ebus = events.EventBus(self, "ebus-cloudpro",
+            event_bus_name="ebus-cloudpro"
         )
 
-        ebus.archive("cdk-ebus-cloudpro-arch",
-            archive_name="cdk-ebus-cloudpro-arch",
+        ebus.archive("ebus-cloudpro-arch",
+            archive_name="ebus-cloudpro-arch",
             description="Archive for CloudPro events",
             event_pattern=events.EventPattern(
                 account=[Stack.of(self).account]

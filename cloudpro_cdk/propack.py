@@ -22,18 +22,18 @@ class ProPack(Stack):
         SOURCE_PROPACK_LOADER="custom.lambda.proload.pro_loader"
 
         
-        dynamo_propack_questionnaire = dynamodb.Table(self,"cdk-dynamo-propack-questionnaire",
+        dynamo_propack_questionnaire = dynamodb.Table(self,"dynamo-propack-questionnaire",
             partition_key=dynamodb.Attribute(name="pro_pack", type=dynamodb.AttributeType.STRING),
             #sort_key=dynamodb.Attribute(name="lorem", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
-        dynamo_propack_scoring = dynamodb.Table(self,"cdk-dynamo-propack-scoring",
+        dynamo_propack_scoring = dynamodb.Table(self,"dynamo-propack-scoring",
             partition_key=dynamodb.Attribute(name="pro_pack", type=dynamodb.AttributeType.STRING),
             #sort_key=dynamodb.Attribute(name="lorem", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
         
-        bucket_propack=s3.Bucket(self, "cdk-bucket-propack",
+        bucket_propack=s3.Bucket(self, "bucket-propack",
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
@@ -42,7 +42,7 @@ class ProPack(Stack):
         )
  
         fn_propack_extractor = lambda_.Function(
-            self,"cdk-fn-propack-extractor",
+            self,"fn-propack-extractor",
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/","pro_extractor")),
@@ -60,9 +60,9 @@ class ProPack(Stack):
         # Default Bus: New S3 Object with prefix raw/ for PRO Pack
         ##############################################################################
         # DLQ for DFLT FWD Rule
-        sqs_dflt_propack_dlq = sqs.Queue(self, "cdk-sqs-dflt-propack-dlq")
+        sqs_dflt_propack_dlq = sqs.Queue(self, "sqs-dflt-propack-dlq")
         # Rule filter to match object created in PRO Pack S3
-        rule_dflt_fwd_propack_newe = events.Rule(self, "cdk-rule-dflt-fwd-propack-new",
+        rule_dflt_fwd_propack_newe = events.Rule(self, "rule-dflt-fwd-propack-new",
             description="Rule to forward from default bus.",
             event_pattern=events.EventPattern(
                 source=["aws.s3"],
@@ -90,9 +90,9 @@ class ProPack(Stack):
         # Core Bus: Object has been created for PRO Pack
         ##############################################################################
         # DLQ for PRO Creation
-        sqs_propack_dlq = sqs.Queue(self, "cdk-sqs-propack-dlq")
+        sqs_propack_dlq = sqs.Queue(self, "sqs-propack-dlq")
         # s3.EventType.OBJECT_CREATED
-        rule_propack_new = events.Rule(self, "cdk-rule-propack-new",
+        rule_propack_new = events.Rule(self, "rule-propack-new",
             description="Rule for when new PRO packs are uploaded to S3.",
             event_pattern=events.EventPattern(
                 source=["aws.s3"],
@@ -112,22 +112,24 @@ class ProPack(Stack):
         )
         ##########################################################################################################
 
-        fn_propack_loader = lambda_.Function(
-            self,"cdk-fn-propack-loader",
+        fn_pro_question_loader = lambda_.Function(
+            self,"fn-pro-question-loader",
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
-            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/","pro_loader")),
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_loader")),
             environment={
+                "PROPACK_BUCKET":bucket_propack.bucket_name,
                 "TABLE_QUESTIONNAIRE":dynamo_propack_questionnaire.table_name,
-                "TABLE_SCORING":dynamo_propack_scoring.table_name,
+                #"TABLE_SCORING":dynamo_propack_scoring.table_name,
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
                 "IDENTIFIER":SOURCE_PROPACK_LOADER
             }
         )
 
-        bucket_propack.grant_read(fn_propack_loader)
-        dynamo_propack_questionnaire.grant_write_data(fn_propack_loader)
-        dynamo_propack_scoring.grant_write_data(fn_propack_loader)
+        bucket_propack.grant_read(fn_pro_question_loader)
+
+        dynamo_propack_questionnaire.grant_write_data(fn_pro_question_loader)
+        # dynamo_propack_scoring.grant_write_data(fn_pro_question_loader)
 
 
         ##########################################################################################################
@@ -135,7 +137,7 @@ class ProPack(Stack):
         #  Core Bus: Extraction event
         ##############################################################################
         # DLQ for PRO Loading
-        sqs_propack_load_dlq = sqs.Queue(self, "cdk-sqs-propack-load-dlq")
+        sqs_propack_load_dlq = sqs.Queue(self, "sqs-propack-load-dlq")
         # s3.EventType.OBJECT_CREATED
         rule_propack_load = events.Rule(self, "cdk-rule-propack-load",
             description="Rule for when new PRO packs complete extraction.",
@@ -149,7 +151,7 @@ class ProPack(Stack):
         # Rule match: Set target to lambda processor to extract files
         rule_propack_load.add_target(
             targets.LambdaFunction(
-                fn_propack_loader,
+                fn_pro_question_loader,
                 dead_letter_queue=sqs_propack_load_dlq,
                 max_event_age=Duration.hours(2), 
                 retry_attempts=2

@@ -3,13 +3,11 @@ import os
 
 import aws_cdk as cdk
 
-from cloudpro_cdk.scoring_safety import ScoringSafety
 from cloudpro_cdk.propack import ProPack
 from cloudpro_cdk.ebus import EventBus
 
 app = cdk.App()
 event_bus_stack=EventBus(app, "cdk-event-bus-stack")
-scoring_safety=ScoringSafety(app, "cdk-scoring-safety-stack")
 propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus)
 
 app.synth()

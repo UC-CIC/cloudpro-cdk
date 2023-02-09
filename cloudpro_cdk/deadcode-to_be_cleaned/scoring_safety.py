@@ -1,3 +1,6 @@
+# REFACTOR THIS
+
+'''
 import os
 
 from constructs import Construct
@@ -10,8 +13,9 @@ class ScoringSafety(Stack):
     def __init__(self,scope: Construct,  construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        
         fn_scoring_safety = lambda_.Function(
-            self,"cdk-fn-scoring-safety",
+            self,"fn-scoring-safety",
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/","scoring_safety"))
@@ -19,3 +23,4 @@ class ScoringSafety(Stack):
 
 
         self.fn_scoring_safety = fn_scoring_safety
+'''
