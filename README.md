@@ -1,7 +1,10 @@
+# CloudPRO
+
+"One click" deploy of CloudPRO.
 
 # Welcome to your CDK Python project!
 
-This is a blank project for CDK development with Python.
+Baseline was generated with CDK for Python.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
