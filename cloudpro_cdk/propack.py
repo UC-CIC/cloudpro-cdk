@@ -14,24 +14,17 @@ from aws_cdk import(
 )
 
 class ProPack(Stack):
-    def __init__(self,scope: Construct,  construct_id: str, ebus_pro:events.EventBus, **kwargs) -> None:
+    def __init__(self,scope: Construct,  construct_id: str, ebus_pro:events.EventBus, dynamodb_tables:dict, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         SOURCE_PROPACK_EXTRACTOR="custom.lambda.proload.pro_extractor"
         DETAIL_TYPE_PROPACK_EXTRACTOR="PRO Extraction"
-        SOURCE_PROPACK_LOADER="custom.lambda.proload.pro_loader"
+
+        SOURCE_PRO_QUESTION_LOADER="custom.lambda.pro.question.loader"
+        SOURCE_PRO_SCORING_LOADER="custom.lambda.pro.scoring.loader"
 
         
-        dynamo_propack_questionnaire = dynamodb.Table(self,"dynamo-propack-questionnaire",
-            partition_key=dynamodb.Attribute(name="pro_pack", type=dynamodb.AttributeType.STRING),
-            #sort_key=dynamodb.Attribute(name="lorem", type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
-        )
-        dynamo_propack_scoring = dynamodb.Table(self,"dynamo-propack-scoring",
-            partition_key=dynamodb.Attribute(name="pro_pack", type=dynamodb.AttributeType.STRING),
-            #sort_key=dynamodb.Attribute(name="lorem", type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
-        )
+
         
         bucket_propack=s3.Bucket(self, "bucket-propack",
             versioned=True,
@@ -121,9 +114,9 @@ class ProPack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_loader")),
             environment={
                 "PROPACK_BUCKET":bucket_propack.bucket_name,
-                "TABLE_QUESTIONNAIRE":dynamo_propack_questionnaire.table_name,
+                "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
-                "IDENTIFIER":SOURCE_PROPACK_LOADER
+                "IDENTIFIER":SOURCE_PRO_QUESTION_LOADER
             }
         )
         fn_pro_scoring_loader = lambda_.Function(
@@ -134,17 +127,17 @@ class ProPack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_loader")),
             environment={
                 "PROPACK_BUCKET":bucket_propack.bucket_name,
-                "TABLE_SCORING":dynamo_propack_scoring.table_name,
+                "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
-                "IDENTIFIER":SOURCE_PROPACK_LOADER
+                "IDENTIFIER":SOURCE_PRO_SCORING_LOADER
             }
         )
 
         bucket_propack.grant_read(fn_pro_question_loader)
-        dynamo_propack_questionnaire.grant_write_data(fn_pro_question_loader)
+        dynamodb_tables["questionnaire"].grant_write_data(fn_pro_question_loader)
 
         bucket_propack.grant_read(fn_pro_scoring_loader)
-        dynamo_propack_scoring.grant_write_data(fn_pro_scoring_loader)
+        dynamodb_tables["scoring"].grant_write_data(fn_pro_scoring_loader)
 
         ##########################################################################################################
         ##############################################################################
