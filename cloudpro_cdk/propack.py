@@ -43,6 +43,7 @@ class ProPack(Stack):
  
         fn_propack_extractor = lambda_.Function(
             self,"fn-propack-extractor",
+            description="propack-extractor", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/","pro_extractor")),
@@ -114,6 +115,7 @@ class ProPack(Stack):
 
         fn_pro_question_loader = lambda_.Function(
             self,"fn-pro-question-loader",
+            description="pro-question-loader", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_loader")),
@@ -126,6 +128,7 @@ class ProPack(Stack):
         )
         fn_pro_scoring_loader = lambda_.Function(
             self,"fn-pro-scoring-loader",
+            description="pro-scoring-loader", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_loader")),
