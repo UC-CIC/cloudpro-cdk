@@ -120,17 +120,28 @@ class ProPack(Stack):
             environment={
                 "PROPACK_BUCKET":bucket_propack.bucket_name,
                 "TABLE_QUESTIONNAIRE":dynamo_propack_questionnaire.table_name,
-                #"TABLE_SCORING":dynamo_propack_scoring.table_name,
+                "EBUS_PROPACK":ebus_pro.event_bus_name,
+                "IDENTIFIER":SOURCE_PROPACK_LOADER
+            }
+        )
+        fn_pro_scoring_loader = lambda_.Function(
+            self,"fn-pro-scoring-loader",
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_loader")),
+            environment={
+                "PROPACK_BUCKET":bucket_propack.bucket_name,
+                "TABLE_SCORING":dynamo_propack_scoring.table_name,
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
                 "IDENTIFIER":SOURCE_PROPACK_LOADER
             }
         )
 
         bucket_propack.grant_read(fn_pro_question_loader)
-
         dynamo_propack_questionnaire.grant_write_data(fn_pro_question_loader)
-        # dynamo_propack_scoring.grant_write_data(fn_pro_question_loader)
 
+        bucket_propack.grant_read(fn_pro_scoring_loader)
+        dynamo_propack_scoring.grant_write_data(fn_pro_scoring_loader)
 
         ##########################################################################################################
         ##############################################################################
@@ -152,6 +163,15 @@ class ProPack(Stack):
         rule_propack_load.add_target(
             targets.LambdaFunction(
                 fn_pro_question_loader,
+                dead_letter_queue=sqs_propack_load_dlq,
+                max_event_age=Duration.hours(2), 
+                retry_attempts=2
+            )
+        )
+        # Rule match: Set target to lambda processor to extract files
+        rule_propack_load.add_target(
+            targets.LambdaFunction(
+                fn_pro_scoring_loader,
                 dead_letter_queue=sqs_propack_load_dlq,
                 max_event_age=Duration.hours(2), 
                 retry_attempts=2
