@@ -55,12 +55,16 @@ def handler(event,context):
     config = configparser.ConfigParser()
     config.read_string(config_file_contents.decode())
     pro_format=config["MAIN"]["FORMAT"]
-
+    propack_questionnaire_file=config["MAIN"]["QUESTIONNAIRE_FILE"]
+    propack_scoring_file=config["MAIN"]["SCORING_FILE"]
+    
     detail_json = {
         "mode": "S3",
         "bucket": source_bucket,
         "propack_name": propack_name,
         "propack_format": pro_format,
+        "propack_questionnaire_file": propack_questionnaire_file,
+        "propack_scoring_file": propack_scoring_file,
         "language": "EN", # only supporting english for prototype
         "status":"extracted"
     }

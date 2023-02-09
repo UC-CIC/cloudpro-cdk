@@ -8,6 +8,8 @@ import hashlib
 s3_resource = boto3.resource('s3')
 dynamodb = boto3.resource('dynamodb')
 
+table_name=os.environ["TABLE_QUESTIONNAIRE"]
+
 
 class ExtendedEnum(Enum):
     @classmethod
@@ -24,22 +26,27 @@ class SupportedFormats(str,ExtendedEnum):
 
 
 
-def store_questionnaire( questionnaire:json ):
-    table_name = os.environ["TABLE_QUESTIONNAIRE"]
+def db_save( payload:json ):
     table = dynamodb.Table(table_name)
-    questionnaire_response = table.put_item(Item=questionnaire)
+    response = table.put_item(Item=payload)
     payload = {
-        "questionnaire_response": questionnaire_response['ResponseMetadata']['HTTPStatusCode']
+        "questionnaire_response": response['ResponseMetadata']['HTTPStatusCode']
     }
     return payload
 
-def read_questionnaire_from_s3(propack_name:str,propack_question_file:str,path:str,language:str,bucket:str):
-    questionnaire_key=path + propack_name + "/" + language + "/" + propack_question_file
-    print("[questionnaire_key] | " + questionnaire_key)
+def read_from_s3(
+    propack_name:str,
+    propack_file:str,
+    path:str,
+    language:str,
+    bucket:str 
+):
+    key=path + propack_name + "/" + language + "/" + propack_file
+    print("[key] | " + key)
 
-    questionnaire_file=s3_resource.Object(bucket_name=bucket, key=questionnaire_key)
-    questionnaire_contents = questionnaire_file.get()['Body'].read()
-    return json.loads(questionnaire_contents)
+    file_obj=s3_resource.Object(bucket_name=bucket, key=key)
+    file_contents = file_obj.get()['Body'].read()
+    return json.loads(file_contents)
 
 
 
@@ -53,6 +60,8 @@ def handler(event,context):
         "bucket": os.environ["PROPACK_BUCKET"],
         "propack_name": "Dyspnea Severity – Short Form 10a & Hard Coronary Disease (10-Year risk)",
         "propack_format": "CPRO_R1",
+        "propack_questionnaire_file": "questionnaire.json",
+        "propack_scoring_file": "scoring.algo",
         "language":"EN",
         "status":"extracted"
     }
@@ -81,14 +90,14 @@ def handler(event,context):
         pass
 
     propack_name=""
-    propack_question_file=""
+    propack_file=""
     path=""
     bucket=""
     language=""
 
     try:
         propack_name=event["detail"]["propack_name"]
-        propack_question_file="questionnaire.json"
+        propack_file=event["detail"]["propack_questionnaire_file"]
         path="propack/"
         bucket=event["detail"]["bucket"]
         language=event["detail"]["language"]
@@ -98,9 +107,9 @@ def handler(event,context):
     
     if mode == SupportedModes.s3_mode:
         # read contents
-        questionnaire_content = read_questionnaire_from_s3( 
+        data = read_from_s3( 
             propack_name=propack_name,
-            propack_question_file=propack_question_file,
+            propack_file=propack_file,
             path=path,
             bucket=bucket,
             language=language
@@ -111,12 +120,18 @@ def handler(event,context):
         payload = {}
         payload["pro_pack"] = propack_hash
         payload["pro_pack_format"] = pro_format
-        payload["data"] = questionnaire_content
+        payload["data"] = data
 
         # store contents
-        response = store_questionnaire(payload)
+        response = db_save(payload)
         print(response)
     elif mode == SupportedModes.file_mode:
         # load from local file; not needed to be implemented for this POC
         pass
+    
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps('<<<<<<<<<<<<<<< END >>>>>>>>>>>>>>>')
+    }
 
