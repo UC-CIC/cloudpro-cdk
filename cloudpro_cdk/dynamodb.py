@@ -24,6 +24,7 @@ class DynamodbStack(Stack):
             #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
+        
 
 
         self.tables = {

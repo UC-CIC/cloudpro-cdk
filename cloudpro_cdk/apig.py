@@ -236,6 +236,27 @@ class ApigStack(Stack):
         )
         dynamodb_tables["state"].grant_read_data(fn_pro_state_statehash_get)
 
+        #################################################################################
+        # /state/{state_hash}  [patch]
+        #################################################################################
+        fn_pro_state_statehash_patch = lambda_.Function(
+            self,"fn-pro-state-statehash-patch",
+            description="pro-state-statehash-patch", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_statehash_patch")),
+            environment={
+                "TABLE_STATE":dynamodb_tables["state"].table_name,
+                "IDENTIFIER":IDENTIFIER_PRO_STATE
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["state"].grant_read_write_data(fn_pro_state_statehash_patch)
+
+
+
+
+
         ###### Route Base = /state
         public_route_state=core_api.root.add_resource("state")
         # /state/{state_hash}
@@ -247,6 +268,17 @@ class ApigStack(Stack):
             api_key_required=True
         )
 
+        # PATCH: /state/{state_hash}
+        state_statehash_patch_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_patch)
+        method_scoring_prohash_patch=public_route_state_statehash.add_method(
+            "PATCH",state_statehash_patch_integration,
+            api_key_required=True,
+            request_parameters={
+                'method.request.querystring.profile': True,
+                'method.request.querystring.username': True,
+            }
+        )
+        
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
