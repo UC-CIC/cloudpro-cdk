@@ -24,7 +24,7 @@ class ProPack(Stack):
         SOURCE_PRO_SCORING_LOADER="custom.lambda.pro.scoring"
 
         
-
+        layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
         
         bucket_propack=s3.Bucket(self, "bucket-propack",
             versioned=True,
@@ -131,7 +131,7 @@ class ProPack(Stack):
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
                 "IDENTIFIER":SOURCE_PRO_SCORING_LOADER
             },
-            layers=[ lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn")) ]
+            layers=[ layer_cloudpro_lib ]
         )
 
         bucket_propack.grant_read(fn_pro_question_loader)
