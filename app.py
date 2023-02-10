@@ -8,6 +8,7 @@ from cloudpro_cdk.propack import ProPack
 from cloudpro_cdk.ebus import EventBus
 from cloudpro_cdk.dynamodb import DynamodbStack
 from cloudpro_cdk.apig import ApigStack
+from cloudpro_cdk.core_events import CoreEvents
 
 #from cloudpro_cdk.tester import TesterStack
 
@@ -27,6 +28,7 @@ LayersStack(app, "cdk-layers-stack")
 event_bus_stack=EventBus(app, "cdk-event-bus-stack")
 propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables)
+core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 
 
 app.synth()

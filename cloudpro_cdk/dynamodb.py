@@ -19,8 +19,15 @@ class DynamodbStack(Stack):
             #sort_key=dynamodb.Attribute(name="lorem", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
-        
+        dynamo_state = dynamodb.Table(self,"dynamo-state",
+            partition_key=dynamodb.Attribute(name="pro_pack", type=dynamodb.AttributeType.STRING),
+            sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+
+
         self.tables = {
             "questionnaire" : dynamo_questionnaire,
-            "scoring" : dynamo_scoring
+            "scoring" : dynamo_scoring,
+            "state" : dynamo_state
         }
