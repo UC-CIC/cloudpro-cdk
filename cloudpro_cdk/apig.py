@@ -12,7 +12,7 @@ class ApigStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
 
-        SOURCE_PRO_QUESTION_PROHASH_GET="custom.lambda.pro.question.loader"
+        SOURCE_PRO_QUESTION_PROHASH_GET="custom.lambda.pro.question"
 
         fn_pro_question_prohash_get = lambda_.Function(
             self,"fn-pro-question-prohash-get",
@@ -39,6 +39,7 @@ class ApigStack(Stack):
         )
 
         public_route_questionnaire=core_api.root.add_resource("questionnaire")
+        # Route Base = /questionnaire
         public_route_questionnaire_prohash=public_route_questionnaire.add_resource("{pro_hash}")
         method_questionnaire_prohash=public_route_questionnaire_prohash.add_method(
             "GET",question_prohash_get_integration,

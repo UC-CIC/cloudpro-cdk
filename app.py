@@ -3,14 +3,27 @@ import os
 
 import aws_cdk as cdk
 
+from cloudpro_cdk.layers import LayersStack
 from cloudpro_cdk.propack import ProPack
 from cloudpro_cdk.ebus import EventBus
 from cloudpro_cdk.dynamodb import DynamodbStack
 from cloudpro_cdk.apig import ApigStack
 
+#from cloudpro_cdk.tester import TesterStack
+
+
+
 app = cdk.App()
 
+
+
+
 dynamodb_stack = DynamodbStack(app, "cdk-dynamodb-stack")
+LayersStack(app, "cdk-layers-stack")
+
+
+#tester_stack = TesterStack(app,"cdk-tester-stack")
+
 event_bus_stack=EventBus(app, "cdk-event-bus-stack")
 propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables)

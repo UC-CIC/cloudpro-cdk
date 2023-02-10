@@ -1,12 +1,19 @@
 import json
 import boto3
 import os
-from decimal import Decimal
 
 from json_encoder.json_encoder import JSONEncoder
+import parsers.cpro_r1
+
+parsers = {
+    "CPRO_R1":parsers.cpro_r1
+    #"FHIR_R4":parsers.cpro_fhir
+}
+
 
 dynamodb = boto3.resource('dynamodb')
 table_name=os.environ["TABLE_QUESTIONNAIRE"]
+
 
 
 def read_questionnaire( pro_hash:str ):
@@ -35,15 +42,22 @@ def read_questionnaire( pro_hash:str ):
 
 def handler(event,context):
     pro_hash = event["pathParameters"]["pro_hash"]
+    link_id = event["pathParameters"]["link_id"]
 
     try:
         result = read_questionnaire(pro_hash)
         if result['ResponseMetadata']['HTTPStatusCode'] != 200:
                 raise Exception(f"DynamoDB issue")
         
+        pro_format=result["Item"]["pro_pack_format"]
+        questionnaire_data=result["Item"]["data"]
+
+        question_result=parsers[pro_format].read_question( questionnaire=questionnaire_data, link_id=link_id )
+        print(question_result)
+        
         return {
             "statusCode":200,
-            "body": json.dumps(result["Item"],cls=JSONEncoder)
+            "body": json.dumps(question_result,cls=JSONEncoder)
         }
     except Exception as e:
         return {

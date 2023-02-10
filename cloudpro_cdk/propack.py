@@ -14,14 +14,14 @@ from aws_cdk import(
 )
 
 class ProPack(Stack):
-    def __init__(self,scope: Construct,  construct_id: str, ebus_pro:events.EventBus, dynamodb_tables:dict, **kwargs) -> None:
+    def __init__(self,scope: Construct,  construct_id: str, ebus_pro:events.EventBus, dynamodb_tables:dict,  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         SOURCE_PROPACK_EXTRACTOR="custom.lambda.proload.pro_extractor"
         DETAIL_TYPE_PROPACK_EXTRACTOR="PRO Extraction"
 
-        SOURCE_PRO_QUESTION_LOADER="custom.lambda.pro.question.loader"
-        SOURCE_PRO_SCORING_LOADER="custom.lambda.pro.scoring.loader"
+        SOURCE_PRO_QUESTION_LOADER="custom.lambda.pro.question"
+        SOURCE_PRO_SCORING_LOADER="custom.lambda.pro.scoring"
 
         
 
@@ -130,7 +130,8 @@ class ProPack(Stack):
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
                 "IDENTIFIER":SOURCE_PRO_SCORING_LOADER
-            }
+            },
+            layers=[ lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn")) ]
         )
 
         bucket_propack.grant_read(fn_pro_question_loader)
@@ -155,6 +156,9 @@ class ProPack(Stack):
             ),
             event_bus=ebus_pro
         )
+        ###
+        # we should likely move this to a step function as a succesful load doesn't happen unless both targets are succesful
+        ####
         # Rule match: Set target to lambda processor to extract files
         rule_propack_load.add_target(
             targets.LambdaFunction(

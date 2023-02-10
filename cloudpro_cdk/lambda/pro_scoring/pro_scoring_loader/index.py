@@ -3,7 +3,7 @@ import boto3
 from enum import Enum
 import os
 import hashlib
-from scoring_safety import ScoringSafety
+from scoring_safety.scoring_safety import ScoringSafety
 import configparser
 
 s3_resource = boto3.resource('s3')

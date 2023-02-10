@@ -2,6 +2,16 @@
 
 "One click" deploy of CloudPRO.
 
+-Bootstrap CDK
+-Set console access for AWS
+-Run build/deploy process
+
+```
+build_layers.bat
+deploy cdk-layers-stack
+deploy *
+```
+
 # Welcome to your CDK Python project!
 
 Baseline was generated with CDK for Python.
