@@ -20,8 +20,8 @@ class DynamodbStack(Stack):
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
         dynamo_state = dynamodb.Table(self,"dynamo-state",
-            partition_key=dynamodb.Attribute(name="pro_pack", type=dynamodb.AttributeType.STRING),
-            sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            partition_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
 

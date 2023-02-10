@@ -12,8 +12,10 @@ class ApigStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
 
-        SOURCE_PRO_QUESTION="custom.lambda.pro.question"
-        SOURCE_PRO_SCORING="custom.lambda.pro.scoring"
+        IDENTIFIER_PRO_QUESTION="custom.lambda.pro.question"
+        IDENTIFIER_PRO_SCORING="custom.lambda.pro.scoring"
+        IDENTIFIER_PRO_STATE="custom.lambda.pro.state"
+
 
         core_api = apigateway.RestApi(
             self,"core-api",
@@ -41,7 +43,7 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_prohash_get")),
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
-                "IDENTIFIER":SOURCE_PRO_QUESTION
+                "IDENTIFIER":IDENTIFIER_PRO_QUESTION
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -59,7 +61,7 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_linkid_get")),
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
-                "IDENTIFIER":SOURCE_PRO_QUESTION
+                "IDENTIFIER":IDENTIFIER_PRO_QUESTION
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -79,7 +81,7 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_all_get")),
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
-                "IDENTIFIER":SOURCE_PRO_QUESTION
+                "IDENTIFIER":IDENTIFIER_PRO_QUESTION
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -135,9 +137,9 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_prohash_get")),
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
-                "IDENTIFIER":SOURCE_PRO_SCORING
+                "IDENTIFIER":IDENTIFIER_PRO_SCORING
             },
-            layers=[ lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib_s0",layer_version_arn=self.node.try_get_context("layer_arn")) ]
+            layers=[ layer_cloudpro_lib ]
         )
         dynamodb_tables["scoring"].grant_read_data(fn_pro_scoring_prohash_get)
 
@@ -153,7 +155,7 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_linkid_get")),
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
-                "IDENTIFIER":SOURCE_PRO_SCORING
+                "IDENTIFIER":IDENTIFIER_PRO_SCORING
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -173,7 +175,7 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_all_get")),
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
-                "IDENTIFIER":SOURCE_PRO_SCORING
+                "IDENTIFIER":IDENTIFIER_PRO_SCORING
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -216,6 +218,41 @@ class ApigStack(Stack):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+        #################################################################################
+        # /state/{state_hash}
+        #################################################################################
+        fn_pro_state_statehash_get = lambda_.Function(
+            self,"fn-pro-state-statehash-get",
+            description="pro-state-statehash-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_statehash_get")),
+            environment={
+                "TABLE_STATE":dynamodb_tables["state"].table_name,
+                "IDENTIFIER":IDENTIFIER_PRO_STATE
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["state"].grant_read_data(fn_pro_state_statehash_get)
+
+        ###### Route Base = /state
+        public_route_state=core_api.root.add_resource("state")
+        # /state/{state_hash}
+        public_route_state_statehash=public_route_state.add_resource("{state_hash}")
+         # GET: /state/{state_hash}
+        state_statehash_get_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_get)
+        method_scoring_prohash=public_route_state_statehash.add_method(
+            "GET",state_statehash_get_integration,
+            api_key_required=True
+        )
+
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
 
 
 
