@@ -10,6 +10,7 @@ from cloudpro_cdk.dynamodb import DynamodbStack
 from cloudpro_cdk.apig import ApigStack
 from cloudpro_cdk.core_events import CoreEvents
 from cloudpro_cdk.userportal import UserPortal
+from cloudpro_cdk.cfront import CfrontStack
 #from cloudpro_cdk.tester import TesterStack
 
 
@@ -30,6 +31,7 @@ propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus,dy
 apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables)
 core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 user_portal=UserPortal(app, "cdk-userportal-stack")
+cfront_stack=CfrontStack(app, "cdk-cfront-stack", bucket_userportal=user_portal.bucket_userportal,core_api=apig_stack.core_api)
 
 app.synth()
 
