@@ -3,11 +3,11 @@ import boto3
 import os
 
 from json_encoder.json_encoder import JSONEncoder
-import parsers.cpro_r1
+import pro_parsers.cpro_r1
 
 parsers = {
-    "CPRO_R1":parsers.cpro_r1
-    #"FHIR_R4":parsers.cpro_fhir
+    "CPRO_R1":pro_parsers.cpro_r1,
+    "FHIR_R4":pro_parsers.cpro_fhir
 }
 
 
