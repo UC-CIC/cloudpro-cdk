@@ -254,23 +254,38 @@ class ApigStack(Stack):
         dynamodb_tables["state"].grant_read_write_data(fn_pro_state_statehash_patch)
 
 
-
+        #################################################################################
+        # /state/update [put]
+        #################################################################################
+        fn_pro_state_update_put = lambda_.Function(
+            self,"fn-pro-state-update-put",
+            description="pro-state-update-put", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_update_put")),
+            environment={
+                "TABLE_STATE":dynamodb_tables["state"].table_name,
+                "IDENTIFIER":IDENTIFIER_PRO_STATE
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["state"].grant_read_write_data(fn_pro_state_update_put)
 
 
         ###### Route Base = /state
         public_route_state=core_api.root.add_resource("state")
         # /state/{state_hash}
         public_route_state_statehash=public_route_state.add_resource("{state_hash}")
-         # GET: /state/{state_hash}
+        # GET: /state/{state_hash}
         state_statehash_get_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_get)
-        method_scoring_prohash=public_route_state_statehash.add_method(
+        method_state_prohash=public_route_state_statehash.add_method(
             "GET",state_statehash_get_integration,
             api_key_required=True
         )
 
         # PATCH: /state/{state_hash}
         state_statehash_patch_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_patch)
-        method_scoring_prohash_patch=public_route_state_statehash.add_method(
+        method_state_prohash_patch=public_route_state_statehash.add_method(
             "PATCH",state_statehash_patch_integration,
             api_key_required=True,
             request_parameters={
@@ -278,7 +293,16 @@ class ApigStack(Stack):
                 'method.request.querystring.username': True,
             }
         )
-        
+
+        # /state/update
+        public_route_state_update=public_route_state.add_resource("update")
+        # PUT: /state/update
+        state_update_put_integration=apigateway.LambdaIntegration(fn_pro_state_update_put)
+        method_state_prohash=public_route_state_update.add_method(
+            "PUT",state_update_put_integration,
+            api_key_required=True
+        )
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
