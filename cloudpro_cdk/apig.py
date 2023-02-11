@@ -25,6 +25,11 @@ class ApigStack(Stack):
         )
 
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
+
+        ###### Route Base = /api [match for cloud front purposes]
+        api_route = core_api.root.add_resource("api")
+
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -91,7 +96,7 @@ class ApigStack(Stack):
         
 
         ###### Route Base = /questionnaire
-        public_route_questionnaire=core_api.root.add_resource("questionnaire")
+        public_route_questionnaire=api_route.add_resource("questionnaire")
         # /questionnaire/all
         public_route_questionnaire_all=public_route_questionnaire.add_resource("all")
         # GET: /questionnaire/all
@@ -183,9 +188,8 @@ class ApigStack(Stack):
 
         
         
-
         ###### Route Base = /scoring
-        public_route_scoring=core_api.root.add_resource("scoring")
+        public_route_scoring=api_route.add_resource("scoring")
         # /scoring/all
         public_route_scoring_all=public_route_scoring.add_resource("all")
         # GET: /scoring/all
@@ -273,7 +277,7 @@ class ApigStack(Stack):
 
 
         ###### Route Base = /state
-        public_route_state=core_api.root.add_resource("state")
+        public_route_state=api_route.add_resource("state")
         # /state/{state_hash}
         public_route_state_statehash=public_route_state.add_resource("{state_hash}")
         # GET: /state/{state_hash}

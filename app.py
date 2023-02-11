@@ -30,8 +30,14 @@ event_bus_stack=EventBus(app, "cdk-event-bus-stack")
 propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables)
 core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
+
 user_portal=UserPortal(app, "cdk-userportal-stack")
-cfront_stack=CfrontStack(app, "cdk-cfront-stack", bucket_userportal=user_portal.bucket_userportal,core_api=apig_stack.core_api)
+
+cfront_stack=CfrontStack(app, "cdk-cfront-stack", 
+    bucket_userportal=user_portal.bucket_userportal,
+    core_api=apig_stack.core_api
+)
+
 
 app.synth()
 
