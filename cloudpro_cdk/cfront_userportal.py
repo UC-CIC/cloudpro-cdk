@@ -9,11 +9,9 @@ from aws_cdk import(
     aws_s3 as s3
 )
 
-class CfrontStack(Stack):
-    def __init__(self,scope: Construct,  construct_id: str, bucket_userportal:s3.IBucket, core_api,   **kwargs) -> None:
+class CfrontUserPortal(Stack):
+    def __init__(self,scope: Construct,  construct_id: str, bucket_userportal:s3.IBucket, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-
-        XKEY = self.node.try_get_context("XKEY")
 
 
         error_response = cloudfront.ErrorResponse(
@@ -34,21 +32,7 @@ class CfrontStack(Stack):
             ),
             price_class=cloudfront.PriceClass.PRICE_CLASS_100,
             default_root_object="index.html",
-            error_responses=[error_response],
-            additional_behaviors={
-                "/api/*": cloudfront.BehaviorOptions(
-                    origin=origins.RestApiOrigin(
-                        core_api,
-                        custom_headers={
-                            "x-api-key": XKEY
-                        }
-                    ),
-                    cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
-                    allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
-                    viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.HTTPS_ONLY
-                )
-            }
+            error_responses=[error_response]
         )
 
-
-        
+        self.cfront_user_portal_domain_name=main_cdn.domain_name

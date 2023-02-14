@@ -15,6 +15,11 @@ parsers = {
 dynamodb = boto3.resource('dynamodb')
 table_name=os.environ["TABLE_SCORING"]
 
+CORS_HEADERS = {
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Origin': os.environ["CORS_ALLOW_UI"],
+    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+}
 
 
 def read_scoring( pro_hash:str ):
@@ -58,11 +63,13 @@ def handler(event,context):
         
         return {
             "statusCode":200,
+            "headers": CORS_HEADERS,
             "body": json.dumps(scoring_result,cls=JSONEncoder)
         }
     except Exception as e:
         return {
             "statusCode":500,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"msg":str(e)})
         }
 

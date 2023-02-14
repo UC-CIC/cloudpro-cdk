@@ -10,7 +10,8 @@ from cloudpro_cdk.dynamodb import DynamodbStack
 from cloudpro_cdk.apig import ApigStack
 from cloudpro_cdk.core_events import CoreEvents
 from cloudpro_cdk.userportal import UserPortal
-from cloudpro_cdk.cfront import CfrontStack
+from cloudpro_cdk.cfront_apig import CfrontApig
+from cloudpro_cdk.cfront_userportal import CfrontUserPortal
 #from cloudpro_cdk.tester import TesterStack
 
 
@@ -28,13 +29,17 @@ LayersStack(app, "cdk-layers-stack")
 
 event_bus_stack=EventBus(app, "cdk-event-bus-stack")
 propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
-apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables)
-core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 
 user_portal=UserPortal(app, "cdk-userportal-stack")
+cfront_userportal_stack=CfrontUserPortal(app, "cdk-cfront-userportal-stack", 
+    bucket_userportal=user_portal.bucket_userportal
+)
 
-cfront_stack=CfrontStack(app, "cdk-cfront-stack", 
-    bucket_userportal=user_portal.bucket_userportal,
+apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables,cfront_user_portal_domain_name=cfront_userportal_stack.cfront_user_portal_domain_name)
+core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
+
+
+cfront_apig_stack=CfrontApig(app, "cdk-cfront-apig-stack",
     core_api=apig_stack.core_api
 )
 

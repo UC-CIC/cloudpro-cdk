@@ -8,7 +8,7 @@ from aws_cdk import(
 )
 
 class ApigStack(Stack):
-    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, **kwargs) -> None:
+    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, cfront_user_portal_domain_name, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
 
@@ -16,19 +16,23 @@ class ApigStack(Stack):
         IDENTIFIER_PRO_SCORING="custom.lambda.pro.scoring"
         IDENTIFIER_PRO_STATE="custom.lambda.pro.state"
 
-
+        FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
         core_api = apigateway.RestApi(
             self,"core-api",
             endpoint_configuration=apigateway.EndpointConfiguration(
                 types=[apigateway.EndpointType.REGIONAL]
-            )
+            ),
+            default_cors_preflight_options=apigateway.CorsOptions(
+                allow_methods=['GET', 'OPTIONS','PUT','PATCH','POST'],
+                allow_origins=[FULL_CFRONT_URL])
         )
-
+ 
+    
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
 
         ###### Route Base = /api [match for cloud front purposes]
         api_route = core_api.root.add_resource("api")
-
+        
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -48,7 +52,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_prohash_get")),
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_QUESTION
+                "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -66,7 +71,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_linkid_get")),
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_QUESTION
+                "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -86,7 +92,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_all_get")),
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_QUESTION
+                "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -142,7 +149,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_prohash_get")),
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_SCORING
+                "IDENTIFIER":IDENTIFIER_PRO_SCORING,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -160,7 +168,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_linkid_get")),
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_SCORING
+                "IDENTIFIER":IDENTIFIER_PRO_SCORING,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -180,7 +189,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_all_get")),
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_SCORING
+                "IDENTIFIER":IDENTIFIER_PRO_SCORING,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -234,7 +244,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_statehash_get")),
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_STATE
+                "IDENTIFIER":IDENTIFIER_PRO_STATE,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -251,7 +262,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_statehash_patch")),
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_STATE
+                "IDENTIFIER":IDENTIFIER_PRO_STATE,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -269,7 +281,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_update_put")),
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
-                "IDENTIFIER":IDENTIFIER_PRO_STATE
+                "IDENTIFIER":IDENTIFIER_PRO_STATE,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
             },
             layers=[ layer_cloudpro_lib ]
         )
