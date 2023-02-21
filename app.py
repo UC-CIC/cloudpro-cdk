@@ -12,6 +12,8 @@ from cloudpro_cdk.core_events import CoreEvents
 from cloudpro_cdk.userportal import UserPortal
 from cloudpro_cdk.cfront_apig import CfrontApig
 from cloudpro_cdk.cfront_userportal import CfrontUserPortal
+from cloudpro_cdk.cognito import CognitoStack
+
 #from cloudpro_cdk.tester import TesterStack
 
 
@@ -42,6 +44,8 @@ core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebu
 cfront_apig_stack=CfrontApig(app, "cdk-cfront-apig-stack",
     core_api=apig_stack.core_api
 )
+
+cognito_stack=CognitoStack(app, "cdk-cognito-stack")
 
 
 app.synth()
