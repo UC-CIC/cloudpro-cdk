@@ -58,7 +58,7 @@ class CognitoStack(Stack):
         ######################################################################################################
         user_pool = cognito.UserPool(self, "cognito-up-cloudpro",
             user_pool_name=COGNITO_POOL,
-            sign_in_aliases=cognito.SignInAliases(username=False, email=True, phone=True),
+            sign_in_aliases=cognito.SignInAliases(username=False, email=True, phone=False),
             #auto_verify=cognito.AutoVerifiedAttrs(email=True, phone=True)
             sign_in_case_sensitive=False,
             self_sign_up_enabled=True,
