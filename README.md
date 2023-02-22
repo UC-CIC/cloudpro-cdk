@@ -12,6 +12,8 @@ deploy cdk-layers-stack
 deploy *
 ```
 
+Please note, registration and login requires SES verified identities to be staged prior to testing as SES will be in Sandbox mode.  Go to SES-> Verified identities and add the email addresses you will be testing with prior to executing login.
+
 # Welcome to your CDK Python project!
 
 Baseline was generated with CDK for Python.
