@@ -89,3 +89,9 @@ class CognitoStack(Stack):
                 resources=[user_pool.user_pool_arn]
             )]
         ))
+        fn_cognito_create_auth_challenge.role.attach_inline_policy(iam.Policy(self, "ses-policy",
+            statements=[iam.PolicyStatement(
+                actions=["ses:SendEmail"],
+                resources=["*"]
+            )]
+        ))
