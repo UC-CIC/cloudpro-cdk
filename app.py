@@ -45,7 +45,7 @@ cfront_apig_stack=CfrontApig(app, "cdk-cfront-apig-stack",
     core_api=apig_stack.core_api
 )
 
-cognito_stack=CognitoStack(app, "cdk-cognito-stack")
+cognito_stack=CognitoStack(app, "cdk-cognito-stack", dynamodb_user_table=dynamodb_stack.tables["user"])
 
 
 app.synth()

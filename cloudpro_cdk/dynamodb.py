@@ -24,11 +24,16 @@ class DynamodbStack(Stack):
             #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
-        
+        dynamo_user = dynamodb.Table(self,"dynamo-user",
+            partition_key=dynamodb.Attribute(name="email", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )       
 
 
         self.tables = {
             "questionnaire" : dynamo_questionnaire,
             "scoring" : dynamo_scoring,
-            "state" : dynamo_state
+            "state" : dynamo_state,
+            "user" : dynamo_user
         }

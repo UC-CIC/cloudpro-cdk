@@ -9,7 +9,7 @@ import os
 from constructs import Construct
 
 class CognitoStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, dynamodb_user_table, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         COGNITO_POOL="cognito-up-cloudpro"
         ######################################################################################################
@@ -51,6 +51,21 @@ class CognitoStack(Stack):
             },
             layers=[]
         ) 
+        fn_cognito_post_confirmation = lambda_.Function(
+            self,"fn-cognito-post-confirmation",
+            description="cognito-post-confirmation", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/cognito","cognito_post_confirmation")),
+            environment={
+                "IDENTIFIER":"COGNITO.POST_CONFIRMATION",
+                "COGNITO_POOL":COGNITO_POOL,
+                "TABLE_USER": dynamodb_user_table.table_name
+            },
+            layers=[]
+        ) 
+        dynamodb_user_table.grant_read_write_data(fn_cognito_post_confirmation)
+
 
 
         ######################################################################################################
@@ -72,7 +87,8 @@ class CognitoStack(Stack):
                 #pre_sign_up=fn_pre_sign_up,
                 define_auth_challenge=fn_cognito_define_auth_challenge,
                 create_auth_challenge=fn_cognito_create_auth_challenge,
-                verify_auth_challenge_response=fn_cognito_verify_auth_challenge
+                verify_auth_challenge_response=fn_cognito_verify_auth_challenge,
+                post_confirmation=fn_cognito_post_confirmation
             )
         )
         client = user_pool.add_client(
