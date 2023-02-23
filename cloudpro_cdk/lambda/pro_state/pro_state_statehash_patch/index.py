@@ -8,7 +8,11 @@ from json_encoder.json_encoder import JSONEncoder
 dynamodb = boto3.resource('dynamodb')
 table_name=os.environ["TABLE_STATE"]
 
-
+CORS_HEADERS = {
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Origin': os.environ["CORS_ALLOW_UI"],
+    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+}
 
 def update_state_item( state_hash:str, link_id:str, status:str ):
     """
@@ -61,11 +65,13 @@ def handler(event,context):
         result = update_state_item( state_hash, link_id, status )       
         return {
             "statusCode":200,
+            "headers": CORS_HEADERS,
             "body": json.dumps(result["states"][link_id],cls=JSONEncoder)
         }
     except Exception as e:
         return {
             "statusCode":500,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"msg":str(e)})
         }
 

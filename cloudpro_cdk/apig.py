@@ -15,6 +15,7 @@ class ApigStack(Stack):
         IDENTIFIER_PRO_QUESTION="custom.lambda.pro.question"
         IDENTIFIER_PRO_SCORING="custom.lambda.pro.scoring"
         IDENTIFIER_PRO_STATE="custom.lambda.pro.state"
+        IDENTIFIER_USER="custom.lambda.user.profile"
 
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
         core_api = apigateway.RestApi(
@@ -326,7 +327,43 @@ class ApigStack(Stack):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
+        #################################################################################
+        # /user/{email}
+        #################################################################################
+        fn_user_profile_get = lambda_.Function(
+            self,"fn-user_profile-get",
+            description="user_profile-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/user","user_profile_get")),
+            environment={
+                "TABLE_USER":dynamodb_tables["user"].table_name,
+                "IDENTIFIER":IDENTIFIER_USER,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["user"].grant_read_data(fn_user_profile_get)
 
+
+        ###### Route Base = /user
+        public_route_user=api_route.add_resource("user")
+        # /user/{email}
+        public_route_user_email=public_route_user.add_resource("{email}")
+        # GET: /user/{email}
+        user_email_get_integration=apigateway.LambdaIntegration(fn_user_profile_get)
+        method_user_profile=public_route_user_email.add_method(
+            "GET",user_email_get_integration,
+            api_key_required=True
+        )
+
+
+
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 
         #################################################################################
