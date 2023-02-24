@@ -13,7 +13,26 @@ def init_user_record( contact:str ):
 
     user_payload = {
         'email':contact,
-        'state':"INIT"
+        'state':"INIT",
+        'tfa':'',
+        'profile': {
+            'first_name':'',
+            'last_name':'',
+            'birth_date':'',
+            'birth_sex':'',
+            'phone':'',
+            'hospital':'',
+            'surgeon':'',
+            'surgery_date':''
+        },
+        'challenge': {
+            'c1q':'',
+            'c1a':'',
+            'c2q':'',
+            'c2a':'',
+            'c3q':'',
+            'c3a':''
+        }
     }
     
     try:

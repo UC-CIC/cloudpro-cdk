@@ -345,9 +345,29 @@ class ApigStack(Stack):
         )
         dynamodb_tables["user"].grant_read_data(fn_user_profile_get)
 
+        fn_user_profile_put = lambda_.Function(
+            self,"fn-user_profile-put",
+            description="user_profile-put", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/user","user_profile_put")),
+            environment={
+                "TABLE_USER":dynamodb_tables["user"].table_name,
+                "IDENTIFIER":IDENTIFIER_USER,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["user"].grant_read_write_data(fn_user_profile_put)
 
         ###### Route Base = /user
         public_route_user=api_route.add_resource("user")
+        # PUT: /user/
+        user_email_put_integration=apigateway.LambdaIntegration(fn_user_profile_put)
+        method_user_profile_put=public_route_user.add_method(
+            "PUT",user_email_put_integration,
+            api_key_required=True
+        )
         # /user/{email}
         public_route_user_email=public_route_user.add_resource("{email}")
         # GET: /user/{email}
