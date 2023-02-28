@@ -16,8 +16,31 @@ class ApigStack(Stack):
         IDENTIFIER_PRO_SCORING="custom.lambda.pro.scoring"
         IDENTIFIER_PRO_STATE="custom.lambda.pro.state"
         IDENTIFIER_USER="custom.lambda.user.profile"
-
+        IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
+
+
+        layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
+
+
+        
+        fn_authorizer_core = lambda_.Function(
+            self,"fn-authorizer-core",
+            description="authorizer-core", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/apig","authorizer_core")),
+            environment={
+                "IDENTIFIER":IDENTIFIER_AUTHORIZER,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        auth = apigateway.TokenAuthorizer(self, "MyAuthorizer",
+            handler=fn_authorizer_core
+        )
+
+
         core_api = apigateway.RestApi(
             self,"core-api",
             endpoint_configuration=apigateway.EndpointConfiguration(
@@ -29,11 +52,26 @@ class ApigStack(Stack):
         )
  
     
-        layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
+        
+
+
+
+
+
+
+
+
+
 
         ###### Route Base = /api [match for cloud front purposes]
         api_route = core_api.root.add_resource("api")
         
+
+
+
+
+
+
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -375,6 +413,7 @@ class ApigStack(Stack):
         user_sub_get_integration=apigateway.LambdaIntegration(fn_user_profile_get)
         method_user_profile=public_route_user_sub.add_method(
             "GET",user_sub_get_integration,
+            authorizer=auth,
             api_key_required=True
         )
         
