@@ -9,7 +9,7 @@ import os
 from constructs import Construct
 
 class CognitoStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, dynamodb_user_table, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, dynamodb_user_table,dynamodb_user_staged_table,**kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         COGNITO_POOL="cognito-up-cloudpro"
         ######################################################################################################
@@ -60,12 +60,13 @@ class CognitoStack(Stack):
             environment={
                 "IDENTIFIER":"COGNITO.POST_CONFIRMATION",
                 "COGNITO_POOL":COGNITO_POOL,
-                "TABLE_USER": dynamodb_user_table.table_name
+                "TABLE_USER": dynamodb_user_table.table_name,
+                "TABLE_USER_STAGED": dynamodb_user_staged_table.table_name
             },
             layers=[]
         ) 
         dynamodb_user_table.grant_read_write_data(fn_cognito_post_confirmation)
-
+        dynamodb_user_staged_table.grant_read_data(fn_cognito_post_confirmation)
 
 
         ######################################################################################################

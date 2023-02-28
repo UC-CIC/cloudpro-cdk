@@ -1,17 +1,22 @@
 import json
+
 import boto3
-import os
+from boto3.dynamodb.conditions import Key
 import botocore.exceptions
+
+import os
 
 dynamodb = boto3.resource('dynamodb')
 table_name_user=os.environ["TABLE_USER"]
-
+table_name_user_staged=os.environ["TABLE_USER_STAGED"]
 #event.request.userAttributes.email
 
-def init_user_record( contact:str ):
+def init_user_record( contact:str,sub:str ):
     table = dynamodb.Table(table_name_user)
+    table_staged = dynamodb.Table(table_name_user_staged)
 
     user_payload = {
+        'sub':sub,
         'email':contact,
         'state':"INIT",
         'tfa':'',
@@ -34,19 +39,29 @@ def init_user_record( contact:str ):
             'c3a':''
         }
     }
-    
+
+
+    try:
+        search_key = {
+            'email': contact
+        }        
+
+        result = table_staged.get_item(Key=search_key)
+        print(result)
+        if( 'Item' in result ):
+            user_payload = result["Item"].copy()
+            user_payload['sub'] = sub
+            user_payload['state'] = "STAGED"
+    except Exception as e:
+        print("Exception on staged tabel: ", e)
+        raise
+
     try:
         table.put_item(
-            Item=user_payload,
-            ConditionExpression='attribute_not_exists(email)'
+            Item=user_payload
         )
-    except botocore.exceptions.ClientError as e:
-        # Ignore the ConditionalCheckFailedException, bubble up
-        # other exceptions.
-        if e.response['Error']['Code'] != 'ConditionalCheckFailedException':
-            raise
-        else:
-            print("<Existing Staged Record>")
+    except Exception as e:
+        raise Exception("<Irrecoverable write error")
 
 def handler(event, context):
     """Post Confirmation
@@ -56,10 +71,11 @@ def handler(event, context):
     
     request = event.get('request')
     contact = request.get('userAttributes').get('email')
+    sub = request.get('userAttributes').get('sub')
     #print("EMAIL: ", contact)
 
     try:
-        init_user_record( contact ) 
+        init_user_record( contact,sub ) 
     except Exception as e:
         print(e)
 
