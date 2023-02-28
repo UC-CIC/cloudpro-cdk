@@ -17,7 +17,7 @@ CORS_HEADERS = {
 
 
 
-def read_state( email:str ):
+def read_state( sub:str ):
     """
     Retrieve full payload for a specific scoring algorithm
 
@@ -35,7 +35,7 @@ def read_state( email:str ):
 
     
     search_key = {
-        'email': email
+        'sub': sub
     }
     
 
@@ -43,10 +43,10 @@ def read_state( email:str ):
 
 
 def handler(event,context):
-    email = event["pathParameters"]["email"]
+    sub = event["pathParameters"]["sub"]
 
     try:
-        result = read_state(email)
+        result = read_state(sub)
         if result['ResponseMetadata']['HTTPStatusCode'] != 200:
                 raise Exception(f"DynamoDB issue")
         

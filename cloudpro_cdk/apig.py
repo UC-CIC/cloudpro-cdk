@@ -328,7 +328,7 @@ class ApigStack(Stack):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
         #################################################################################
-        # /user/{email}
+        # /user/{sub}
         #################################################################################
         fn_user_profile_get = lambda_.Function(
             self,"fn-user_profile-get",
@@ -363,20 +363,21 @@ class ApigStack(Stack):
         ###### Route Base = /user
         public_route_user=api_route.add_resource("user")
         # PUT: /user/
-        user_email_put_integration=apigateway.LambdaIntegration(fn_user_profile_put)
+        user_sub_put_integration=apigateway.LambdaIntegration(fn_user_profile_put)
         method_user_profile_put=public_route_user.add_method(
-            "PUT",user_email_put_integration,
+            "PUT",user_sub_put_integration,
             api_key_required=True
         )
-        # /user/{email}
-        public_route_user_email=public_route_user.add_resource("{email}")
-        # GET: /user/{email}
-        user_email_get_integration=apigateway.LambdaIntegration(fn_user_profile_get)
-        method_user_profile=public_route_user_email.add_method(
-            "GET",user_email_get_integration,
+        
+        # /user/{sub}
+        public_route_user_sub=public_route_user.add_resource("{sub}")
+        # GET: /user/{sub}
+        user_sub_get_integration=apigateway.LambdaIntegration(fn_user_profile_get)
+        method_user_profile=public_route_user_sub.add_method(
+            "GET",user_sub_get_integration,
             api_key_required=True
         )
-
+        
 
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
