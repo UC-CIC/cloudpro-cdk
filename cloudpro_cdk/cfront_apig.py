@@ -25,7 +25,7 @@ class CfrontApig(Stack):
             min_ttl=Duration.seconds(0),
             max_ttl=Duration.seconds(1),
             cookie_behavior=cloudfront.CacheCookieBehavior.none(),
-            header_behavior=cloudfront.CacheHeaderBehavior.allow_list("Authorization"),
+            header_behavior=cloudfront.CacheHeaderBehavior.allow_list("Authorization","Access-Control-Request-Method","Access-Control-Request-Headers","Origin"),
             query_string_behavior=cloudfront.CacheQueryStringBehavior.all(),
             enable_accept_encoding_gzip=True,
             enable_accept_encoding_brotli=True

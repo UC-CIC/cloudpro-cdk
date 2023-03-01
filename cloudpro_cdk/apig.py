@@ -17,6 +17,7 @@ class ApigStack(Stack):
         IDENTIFIER_PRO_STATE="custom.lambda.pro.state"
         IDENTIFIER_USER="custom.lambda.user.profile"
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
+        IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
 
 
@@ -36,9 +37,27 @@ class ApigStack(Stack):
             },
             layers=[ layer_cloudpro_lib ]
         )
-        auth = apigateway.TokenAuthorizer(self, "MyAuthorizer",
+        fn_authorizer_debug = lambda_.Function(
+            self,"fn-authorizer-debug",
+            description="authorizer-debug", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/apig","authorizer_debug")),
+            environment={
+                "IDENTIFIER":IDENTIFIER_AUTHORIZER_DEBUG,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "DEBUG_TOKEN":self.node.try_get_context("debug_token")
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        auth = apigateway.TokenAuthorizer(self, "coreAuth",
             handler=fn_authorizer_core
         )
+        auth_debug = apigateway.TokenAuthorizer(self, "debugAuth",
+            handler=fn_authorizer_debug
+        )
+
+
 
 
         core_api = apigateway.RestApi(
@@ -149,6 +168,7 @@ class ApigStack(Stack):
         question_all_get_integration=apigateway.LambdaIntegration(fn_pro_question_all_get)
         method_questionnaire_prohash=public_route_questionnaire_all.add_method(
             "GET",question_all_get_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
         # /questionnaire/{pro_hash}
@@ -157,6 +177,7 @@ class ApigStack(Stack):
         question_prohash_get_integration=apigateway.LambdaIntegration(fn_pro_question_prohash_get)
         method_questionnaire_prohash=public_route_questionnaire_prohash.add_method(
             "GET",question_prohash_get_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
         # /questionnaire/{pro_hash}/question
@@ -167,6 +188,7 @@ class ApigStack(Stack):
         question_linkid_get_integration=apigateway.LambdaIntegration(fn_pro_question_linkid_get)
         method_questionnaire_prohash=public_route_questionnaire_prohash_question_linkid.add_method(
             "GET",question_linkid_get_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
 
@@ -245,6 +267,7 @@ class ApigStack(Stack):
         scoring_all_get_integration=apigateway.LambdaIntegration(fn_pro_scoring_all_get)
         method_scoring_prohash=public_route_scoring_all.add_method(
             "GET",scoring_all_get_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
         # /scoring/{pro_hash}
@@ -253,6 +276,7 @@ class ApigStack(Stack):
         scoring_prohash_get_integration=apigateway.LambdaIntegration(fn_pro_scoring_prohash_get)
         method_scoring_prohash=public_route_scoring_prohash.add_method(
             "GET",scoring_prohash_get_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
         # /scoring/{pro_hash}/scoring
@@ -263,6 +287,7 @@ class ApigStack(Stack):
         scoring_linkid_get_integration=apigateway.LambdaIntegration(fn_pro_scoring_linkid_get)
         method_scoring_prohash=public_route_scoring_prohash_scoring_linkid.add_method(
             "GET",scoring_linkid_get_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
 
@@ -336,6 +361,7 @@ class ApigStack(Stack):
         state_statehash_get_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_get)
         method_state_prohash=public_route_state_statehash.add_method(
             "GET",state_statehash_get_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
 
@@ -343,6 +369,7 @@ class ApigStack(Stack):
         state_statehash_patch_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_patch)
         method_state_prohash_patch=public_route_state_statehash.add_method(
             "PATCH",state_statehash_patch_integration,
+            authorizer=auth_debug,
             api_key_required=True,
             request_parameters={
                 'method.request.querystring.profile': True,
@@ -356,6 +383,7 @@ class ApigStack(Stack):
         state_update_put_integration=apigateway.LambdaIntegration(fn_pro_state_update_put)
         method_state_prohash=public_route_state_update.add_method(
             "PUT",state_update_put_integration,
+            authorizer=auth_debug,
             api_key_required=True
         )
 
@@ -404,6 +432,7 @@ class ApigStack(Stack):
         user_sub_put_integration=apigateway.LambdaIntegration(fn_user_profile_put)
         method_user_profile_put=public_route_user.add_method(
             "PUT",user_sub_put_integration,
+            authorizer=auth,
             api_key_required=True
         )
         
