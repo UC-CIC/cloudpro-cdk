@@ -50,8 +50,16 @@ class ApigStack(Stack):
             },
             layers=[ layer_cloudpro_lib ]
         )
+
+        # we are disabling cahing on this authorizer due to an issue when calling
+        # GET /user/{id}  
+        # followed by 
+        # PUT /user
+        # initial GET call caches the policy for /user , however when we do a PUT, we have a hit but mismatch
+        # ultimately failing the call
         auth = apigateway.TokenAuthorizer(self, "coreAuth",
-            handler=fn_authorizer_core
+            handler=fn_authorizer_core,
+            results_cache_ttl=0
         )
         auth_debug = apigateway.TokenAuthorizer(self, "debugAuth",
             handler=fn_authorizer_debug
