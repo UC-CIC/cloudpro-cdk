@@ -1,7 +1,6 @@
 from constructs import Construct
 from aws_cdk import(
     Stack,
-    aws_apigateway as apigateway,
     aws_dynamodb as dynamodb
 )
 
@@ -36,12 +35,25 @@ class DynamodbStack(Stack):
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
 
+        dynamo_survey= dynamodb.Table(self,"dynamo-survey",
+            partition_key=dynamodb.Attribute(name="sub", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+        dynamo_survey_audit= dynamodb.Table(self,"dynamo-survey-audit",
+            partition_key=dynamodb.Attribute(name="sid", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+
         self.tables = {
             "questionnaire" : dynamo_questionnaire,
             "scoring" : dynamo_scoring,
             "state" : dynamo_state,
             "user" : dynamo_user,
-            "user_staged": dynamo_user_staged
+            "user_staged": dynamo_user_staged,
+            "survey":dynamo_survey,
+            "survey_audit":dynamo_survey_audit
         }
         
         

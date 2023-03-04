@@ -1,0 +1,42 @@
+{
+    "metadata": {
+        "name": "Mobility",
+        "description": "Please respond to each question or statement",
+        "version": "1.0",
+        "format":"CPRO_V1"
+    },
+    "questionnaire":[
+        {
+            "element":"question",
+            "data": {
+                "type":"dropdown",
+                "value":["Without any difficulty","With a little difficulty","With some difficulty","With much difficulty","Unable to do"],
+                "scale":"level",
+                "text":"Are you able to stand for one hour?",
+                "description":"Are you able to stand for one hour?",
+                "link_id":"PFA10"
+            }
+        },
+		{
+            "element":"question",
+            "data": {
+                "type":"dropdown",
+                "value":["Without any difficulty","With a little difficulty","With some difficulty","With much difficulty","Unable to do"],
+                "scale":"level",
+                "text":"Are you able to stand up from an armless straight chair?",
+                "description":"Are you able to stand up from an armless straight chair?",
+                "link_id":"PFA15"
+            }
+        },
+        {
+            "element":"question",
+            "data": {
+                "type":"hidden",
+                "value":0,
+                "text":"t_score",
+                "description":"t_score",
+                "link_id":"t_score"
+            }
+        }
+    ]
+}

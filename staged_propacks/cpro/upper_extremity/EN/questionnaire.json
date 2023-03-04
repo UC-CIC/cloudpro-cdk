@@ -1,0 +1,42 @@
+{
+    "metadata": {
+        "name": "Upper Extremity",
+        "description": "Please respond to each question or statement",
+        "version": "1.0",
+        "format":"CPRO_V1"
+    },
+    "questionnaire":[
+        {
+            "element":"question",
+            "data": {
+                "type":"dropdown",
+                "value":["Without any difficulty","With a little difficulty","With some difficulty","With much difficulty","Unable to do"],
+                "scale":"level",
+                "text":"Are you able to carry a heavy object (over 10 pounds /5 kg)?",
+                "description":"Are you able to carry a heavy object (over 10 pounds /5 kg)?",
+                "link_id":"PFA14r1"
+            }
+        },
+		{
+            "element":"question",
+            "data": {
+                "type":"dropdown",
+                "value":["Without any difficulty","With a little difficulty","With some difficulty","With much difficulty","Unable to do"],
+                "scale":"level",
+                "text":"Are you able to dress yourself, including tying shoelaces and buttoning your clothes? ",
+                "description":"Are you able to dress yourself, including tying shoelaces and buttoning your clothes? ",
+                "link_id":"PFA16r1"
+            }
+        },
+        {
+            "element":"question",
+            "data": {
+                "type":"hidden",
+                "value":0,
+                "text":"t_score",
+                "description":"t_score",
+                "link_id":"t_score"
+            }
+        }
+    ]
+}

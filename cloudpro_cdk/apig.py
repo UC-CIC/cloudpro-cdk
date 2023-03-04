@@ -4,7 +4,8 @@ from constructs import Construct
 from aws_cdk import(
     Stack,
     aws_apigateway as apigateway,
-    aws_lambda as lambda_
+    aws_lambda as lambda_,
+    Duration
 )
 
 class ApigStack(Stack):
@@ -16,6 +17,7 @@ class ApigStack(Stack):
         IDENTIFIER_PRO_SCORING="custom.lambda.pro.scoring"
         IDENTIFIER_PRO_STATE="custom.lambda.pro.state"
         IDENTIFIER_USER="custom.lambda.user.profile"
+        IDENTIFIER_SURVEY="custom.lambda.survey"
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
@@ -59,10 +61,11 @@ class ApigStack(Stack):
         # ultimately failing the call
         auth = apigateway.TokenAuthorizer(self, "coreAuth",
             handler=fn_authorizer_core,
-            results_cache_ttl=0
+            results_cache_ttl=Duration.seconds(0)
         )
         auth_debug = apigateway.TokenAuthorizer(self, "debugAuth",
-            handler=fn_authorizer_debug
+            handler=fn_authorizer_debug,
+            results_cache_ttl=Duration.seconds(0)
         )
 
 
@@ -454,6 +457,42 @@ class ApigStack(Stack):
             api_key_required=True
         )
         
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+        #################################################################################
+        # /survey/{sub}
+        #################################################################################
+        fn_survey_get = lambda_.Function(
+            self,"fn-survey-get",
+            description="survey-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/survey","survey_get")),
+            environment={
+                "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
+                "IDENTIFIER":IDENTIFIER_SURVEY,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["survey"].grant_read_data(fn_survey_get)
+
+         ###### Route Base = /survey
+        public_route_survey=api_route.add_resource("survey")
+        
+        # /user/{sub}
+        public_route_survey_sub=public_route_survey.add_resource("{sub}")
+        # GET: /user/{sub}
+        survey_sub_get_integration=apigateway.LambdaIntegration(fn_survey_get)
+        method_survey=public_route_survey_sub.add_method(
+            "GET",survey_sub_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

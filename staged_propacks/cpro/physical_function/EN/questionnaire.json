@@ -1,0 +1,42 @@
+{
+    "metadata": {
+        "name": "Physical Function",
+        "description": "Please respond to each question or statement",
+        "version": "1.0",
+        "format":"CPRO_V1"
+    },
+    "questionnaire":[
+        {
+            "element":"question",
+            "data": {
+                "type":"dropdown",
+                "value":["Without any difficulty","With a little difficulty","With some difficulty","With much difficulty","Unable to do"],
+                "scale":"level",
+                "text":"Are you able to move a chair from one room to another?",
+                "description":"Are you able to move a chair from one room to another?",
+                "link_id":"PFA9"
+            }
+        },
+		{
+            "element":"question",
+            "data": {
+                "type":"dropdown",
+                "value":["Without any difficulty","With a little difficulty","With some difficulty","With much difficulty","Unable to do"],
+                "scale":"level",
+                "text":"Are you able to bend down and pick up clothing from the floor?",
+                "description":"Are you able to bend down and pick up clothing from the floor?",
+                "link_id":"PFA9"
+            }
+        },
+        {
+            "element":"question",
+            "data": {
+                "type":"hidden",
+                "value":0,
+                "text":"t_score",
+                "description":"t_score",
+                "link_id":"t_score"
+            }
+        }
+    ]
+}
