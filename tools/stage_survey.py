@@ -26,8 +26,8 @@ payload = {
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
@@ -35,17 +35,17 @@ payload = {
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
-                    "name": "Upper Extrimity",
+                    "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 }
             ] 
         },
@@ -56,8 +56,8 @@ payload = {
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":True
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
@@ -65,17 +65,17 @@ payload = {
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":True,
+                    "missed":False
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
-                    "name": "Upper Extrimity",
+                    "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":True
                 }
             ] 
         }    
@@ -88,8 +88,8 @@ payload = {
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":True,
+                    "missed":False
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
@@ -97,17 +97,17 @@ payload = {
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
-                    "name": "Upper Extrimity",
+                    "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 }
             ] 
         },
@@ -118,8 +118,8 @@ payload = {
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
@@ -127,17 +127,17 @@ payload = {
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
-                    "name": "Upper Extrimity",
+                    "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
                     "due":"2023-03-10",
-                    "completed":"",
-                    "missed":""
+                    "completed":False,
+                    "missed":False
                 }
             ] 
         }
