@@ -63,10 +63,13 @@ class ApigStack(Stack):
             handler=fn_authorizer_core,
             results_cache_ttl=Duration.seconds(0)
         )
+
+        '''
         auth_debug = apigateway.TokenAuthorizer(self, "debugAuth",
             handler=fn_authorizer_debug,
             results_cache_ttl=Duration.seconds(0)
         )
+        '''
 
 
 
@@ -179,7 +182,7 @@ class ApigStack(Stack):
         question_all_get_integration=apigateway.LambdaIntegration(fn_pro_question_all_get)
         method_questionnaire_prohash=public_route_questionnaire_all.add_method(
             "GET",question_all_get_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
         # /questionnaire/{pro_hash}
@@ -188,7 +191,7 @@ class ApigStack(Stack):
         question_prohash_get_integration=apigateway.LambdaIntegration(fn_pro_question_prohash_get)
         method_questionnaire_prohash=public_route_questionnaire_prohash.add_method(
             "GET",question_prohash_get_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
         # /questionnaire/{pro_hash}/question
@@ -199,7 +202,7 @@ class ApigStack(Stack):
         question_linkid_get_integration=apigateway.LambdaIntegration(fn_pro_question_linkid_get)
         method_questionnaire_prohash=public_route_questionnaire_prohash_question_linkid.add_method(
             "GET",question_linkid_get_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
 
@@ -278,7 +281,7 @@ class ApigStack(Stack):
         scoring_all_get_integration=apigateway.LambdaIntegration(fn_pro_scoring_all_get)
         method_scoring_prohash=public_route_scoring_all.add_method(
             "GET",scoring_all_get_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
         # /scoring/{pro_hash}
@@ -287,7 +290,7 @@ class ApigStack(Stack):
         scoring_prohash_get_integration=apigateway.LambdaIntegration(fn_pro_scoring_prohash_get)
         method_scoring_prohash=public_route_scoring_prohash.add_method(
             "GET",scoring_prohash_get_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
         # /scoring/{pro_hash}/scoring
@@ -298,7 +301,7 @@ class ApigStack(Stack):
         scoring_linkid_get_integration=apigateway.LambdaIntegration(fn_pro_scoring_linkid_get)
         method_scoring_prohash=public_route_scoring_prohash_scoring_linkid.add_method(
             "GET",scoring_linkid_get_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
 
