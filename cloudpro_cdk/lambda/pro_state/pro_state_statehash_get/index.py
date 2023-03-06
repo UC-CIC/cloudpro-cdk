@@ -42,16 +42,22 @@ def read_state( state_hash:str ):
 
 def handler(event,context):
     state_hash = event["pathParameters"]["state_hash"]
+    print("Check for:", state_hash)
 
     try:
         result = read_state(state_hash)
+        print(result)
         if result['ResponseMetadata']['HTTPStatusCode'] != 200:
                 raise Exception(f"DynamoDB issue")
+        if( "Item" in result ):
+             rpayload=result["Item"]
+        else:
+             rpayload={}
         
         return {
             "statusCode":200,
             "headers": CORS_HEADERS,
-            "body": json.dumps(result["Item"],cls=JSONEncoder)
+            "body": json.dumps(rpayload,cls=JSONEncoder)
         }
     except Exception as e:
         return {

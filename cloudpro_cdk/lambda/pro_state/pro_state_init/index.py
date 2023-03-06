@@ -13,6 +13,14 @@ table_name_state=os.environ["TABLE_STATE"]
 table_name_questionnaire=os.environ["TABLE_QUESTIONNAIRE"]
 
 
+CORS_HEADERS = {
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Origin': os.environ["CORS_ALLOW_UI"],
+    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+}
+
+
+
 def read_questionnaire( pro_hash:str ):
     """
     Retrieve full payload for a specific questionnaire
@@ -93,7 +101,7 @@ def handler(event,context):
     #################################################
     # FOR TESTING LAMBDA w/ MANUAL TRIGGER
     #################################################
-    #'''
+    '''
     detail_json = {
         "pro_hash": "2d7243474da051a4243697acdaba49dab0795f0ba7815caab4044e6740ac481a"
     }
@@ -103,12 +111,15 @@ def handler(event,context):
         'detail': detail_json,
         'eventBusName':"cdk-ebus-cloudpro"
     }
-    #'''
-    state_hash="abc"
+    '''
+    #state_hash="abc"
     #################################################
     
     try:
-        pro_hash = event["detail"]["pro_hash"]
+        state_hash= event["pathParameters"]["state_hash"]
+        pro_hash = event["pathParameters"]["pro_pack"]
+        print(state_hash)
+        print(pro_hash)
         result = read_questionnaire(pro_hash)
         if result['ResponseMetadata']['HTTPStatusCode'] != 200:
                 raise Exception(f"DynamoDB issue")
@@ -159,11 +170,13 @@ def handler(event,context):
 
         return {
             "statusCode":200,
+            "headers": CORS_HEADERS,
             "body": json.dumps({},cls=JSONEncoder)
         }
     except Exception as e:
         return {
             "statusCode":500,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"msg":str(e)})
         }
 

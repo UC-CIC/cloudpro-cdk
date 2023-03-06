@@ -22,6 +22,7 @@ payload = {
         { "yyyyPre Operation": [
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[0]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[0]).encode('utf-8') ).hexdigest(),
                     "name": "Mobility",
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -31,6 +32,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[1]).encode('utf-8') ).hexdigest(),
                     "name": "Physical Function",
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -40,6 +42,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[2]).encode('utf-8') ).hexdigest(),
                     "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -52,6 +55,7 @@ payload = {
                 { "zzzzzzPre Operation": [
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[0]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[0]).encode('utf-8') ).hexdigest(),
                     "name": "Mobility",
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -61,6 +65,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[1]).encode('utf-8') ).hexdigest(),
                     "name": "Physical Function",
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -70,6 +75,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[2]).encode('utf-8') ).hexdigest(),
                     "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -84,6 +90,7 @@ payload = {
         { "Pre Operation": [
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[0]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[0]).encode('utf-8') ).hexdigest(),
                     "name": "Mobility",
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -93,6 +100,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[1]).encode('utf-8') ).hexdigest(),
                     "name": "Physical Function",
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -102,6 +110,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[2]).encode('utf-8') ).hexdigest(),
                     "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -114,6 +123,7 @@ payload = {
                 { "xxxPre Operation": [
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[0]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[0]).encode('utf-8') ).hexdigest(),
                     "name": "Mobility",
                     "description": "Lorem MOBILITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -123,6 +133,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[1]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[1]).encode('utf-8') ).hexdigest(),
                     "name": "Physical Function",
                     "description": "Lorem PHYSICAL FUNCTION ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",
@@ -132,6 +143,7 @@ payload = {
                 },
                 {
                     "sid":hashlib.sha256( (SUB+SURVEYS[2]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[2]).encode('utf-8') ).hexdigest(),
                     "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":"2023-03-01",

@@ -362,7 +362,27 @@ class ApigStack(Stack):
             layers=[ layer_cloudpro_lib ]
         )
         dynamodb_tables["state"].grant_read_write_data(fn_pro_state_update_put)
+        
 
+        #################################################################################
+        # /state/init/{state_hash}/{propack}
+        #################################################################################
+        fn_pro_state_init_post = lambda_.Function(
+            self,"fn-pro-state-init-post",
+            description="pro-state-init-post", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_init")),
+            environment={
+                "TABLE_STATE":dynamodb_tables["state"].table_name,
+                "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
+                "IDENTIFIER":IDENTIFIER_PRO_STATE,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["state"].grant_read_write_data(fn_pro_state_init_post)
+        dynamodb_tables["questionnaire"].grant_read_data(fn_pro_state_init_post)
 
         ###### Route Base = /state
         public_route_state=api_route.add_resource("state")
@@ -372,15 +392,30 @@ class ApigStack(Stack):
         state_statehash_get_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_get)
         method_state_prohash=public_route_state_statehash.add_method(
             "GET",state_statehash_get_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
+
+
+        # POST: /state/init/{state_hash}/{propack}
+        public_init_route_state=public_route_state.add_resource("init")
+        public_init_route_state_hash=public_init_route_state.add_resource("{state_hash}")
+        public_init_route_pro_pack=public_init_route_state_hash.add_resource("{pro_pack}")
+        # POST:
+        state_statehash_get_integration=apigateway.LambdaIntegration(fn_pro_state_init_post)
+        method_state_init=public_init_route_pro_pack.add_method(
+            "POST",state_statehash_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+
 
         # PATCH: /state/{state_hash}
         state_statehash_patch_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_patch)
         method_state_prohash_patch=public_route_state_statehash.add_method(
             "PATCH",state_statehash_patch_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True,
             request_parameters={
                 'method.request.querystring.profile': True,
@@ -394,7 +429,7 @@ class ApigStack(Stack):
         state_update_put_integration=apigateway.LambdaIntegration(fn_pro_state_update_put)
         method_state_prohash=public_route_state_update.add_method(
             "PUT",state_update_put_integration,
-            authorizer=auth_debug,
+            authorizer=auth,
             api_key_required=True
         )
 
