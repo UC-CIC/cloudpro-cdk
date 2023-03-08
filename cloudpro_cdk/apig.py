@@ -444,17 +444,62 @@ class ApigStack(Stack):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
+
+        profrole = iam.Role(self, "scheduler-role",
+          assumed_by=iam.CompositePrincipal(
+            iam.ServicePrincipal("scheduler.amazonaws.com"),
+            iam.ServicePrincipal("lambda.amazonaws.com"),
+            iam.ServicePrincipal("events.amazonaws.com")
+            )
+        )
         fn_scheduler_processing = lambda_.Function(
             self,"fn-scheduler-processing",
             description="scheduler-processing", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
+            role=profrole,
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/survey","scheduler_processing")),
             environment={
-                "IDENTIFIER":"SCHEDULER.PROCESSING"
+                "IDENTIFIER":"SCHEDULER.PROCESSING",
+                "TABLE_SURVEY": dynamodb_tables["survey"].table_name
             },
             layers=[layer_boto_lib]
         )
+        dynamodb_tables["survey"].grant_read_write_data(fn_scheduler_processing)
+
+        # in production you'd likely want to pair this down (IE dynamically generate the policy on event scheduling)
+        # technically should probably seperate on user profile creation to actually create an event and then trigger
+        # the scheduling mechanics so we can separate duties
+        profrole.attach_inline_policy(iam.Policy(self, "scheduler-policy",
+            statements=[iam.PolicyStatement(
+                actions=["scheduler:CreateSchedule"],
+                resources=["*"]
+            )             
+            ]
+        ))
+        profrole.attach_inline_policy(iam.Policy(self, "scheduler-pass-policy",
+            statements=[iam.PolicyStatement(
+                actions=["iam:PassRole"],
+                resources=[fn_scheduler_processing.role.role_arn]
+            )]
+        ))
+        profrole.attach_inline_policy(iam.Policy(self, "scheduler-basic-execution-logging",
+            statements=[iam.PolicyStatement(
+                actions=["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],
+                resources=["*"]
+            )             
+            ]
+        ))
+        profrole.attach_inline_policy(iam.Policy(self, "scheduler-basic-explicit-invoke",
+            statements=[iam.PolicyStatement(
+                actions=["lambda:InvokeFunction"],
+                resources=[fn_scheduler_processing.function_arn]
+            )             
+            ]
+        ))
+
+
+
         #"SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn
         #################################################################################
         # /user/{sub}
@@ -476,13 +521,6 @@ class ApigStack(Stack):
 
 
 
-        profrole = iam.Role(self, "Role",
-          assumed_by=iam.CompositePrincipal(
-            iam.ServicePrincipal("scheduler.amazonaws.com"),
-            iam.ServicePrincipal("lambda.amazonaws.com"),
-            iam.ServicePrincipal("events.amazonaws.com")
-            )
-        )
 
         fn_user_profile_put = lambda_.Function(
             self,"fn-user_profile-put",
@@ -501,25 +539,10 @@ class ApigStack(Stack):
             layers=[ layer_cloudpro_lib,layer_boto_lib ]
         )
 
-        # in production you'd likely want to pair this down (IE dynamically generate the policy on event scheduling)
-        # technically should probably seperate on user profile creation to actually create an event and then trigger
-        # the scheduling mechanics so we can separate duties
-        fn_user_profile_put.role.attach_inline_policy(iam.Policy(self, "scheduler-policy",
-            statements=[iam.PolicyStatement(
-                actions=["scheduler:CreateSchedule"],
-                resources=["*"]
-            )             
-            ]
-        ))
-        fn_user_profile_put.role.attach_inline_policy(iam.Policy(self, "scheduler-pass-policy",
-            statements=[iam.PolicyStatement(
-                actions=["iam:PassRole"],
-                resources=[fn_scheduler_processing.role.role_arn]
-            )]
-        ))
+
         
 
-
+        #this access flows to our scheduler too
         dynamodb_tables["user"].grant_read_write_data(fn_user_profile_put)
 
         ###### Route Base = /user

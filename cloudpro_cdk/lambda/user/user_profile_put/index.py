@@ -25,41 +25,78 @@ CORS_HEADERS = {
 }
 
 
-def schedule_surveys( surg_date: str ):
+def schedule_surveys( surg_date: str, sub: str ):
     print("<New Enrollment For: ", surg_date )
     dt_obj = datetime.strptime(surg_date,"%Y-%m-%d")
     
     event_dates = []
 
     #testing purposes
-    event_dates.append( dt_obj - timedelta(minutes=2) )
+    #event_dates.append( dt_obj - timedelta(minutes=2) )
 
     #real events
-    '''
+    
     event_dates.append( dt_obj - timedelta(days=10) )
     event_dates.append( dt_obj + timedelta(days=10) )
     for i in range(1,13):
         event_dates.append( dt_obj + relativedelta(months=i) )
-    '''
+    
 
     flex_window = { "Mode": "OFF" }
-    lambda_target = {
+
+    header_tags=[
+         "Pre-Operation",
+         "10 Day After Surgery",
+         "1 Month After Surgery",
+         "2 Month After Surgery",
+         "3 Month After Surgery",
+         "4 Month After Surgery",
+         "5 Month After Surgery",
+         "6 Month After Surgery",
+         "7 Month After Surgery",
+         "8 Month After Surgery",
+         "9 Month After Surgery",
+         "10 Month After Surgery",
+         "11 Month After Surgery",
+         "12 Month After Surgery",
+
+    ]
+
+    i = 0
+    for entry in event_dates:
+        assigned=entry.strftime("%Y-%m-%dT%H:%M:%S")
+        due=(entry - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S")
+        ### for testing ==>
+        entry = datetime.now() + timedelta(minutes=2)
+        assigned = entry.strftime("%Y-%m-%dT%H:%M:%S")
+        ######
+        lambda_target = {
             "Arn": target_arn,
             "RoleArn":target_role,
-            "Input": json.dumps({"foo": "bar"})
-    }
-
-    for entry in event_dates:
+            "Input": json.dumps(
+                {
+                    "sub":sub,
+                    "assigned": assigned,
+                    "due": due,
+                    "surg_date":surg_date,
+                    "header_tag":header_tags[i]
+                }
+            )
+        }
         # at(2022-11-20T13:00:00)
-        expression="at(" + entry.strftime("%Y-%m-%dT%H:%M:%S") + ")"
+        tstamp = entry.strftime("%Y-%m-%dT%H:%M:%S")
+        tstamp_e = entry.strftime("%Y-%m-%dT%Hh%Mm%Ss")
+        event_name=sub+"-"+tstamp_e+"-"+str(i)
+        expression="at(" + tstamp + ")"
         print("Scheduling @: ", expression)
         result = scheduler.create_schedule(
-            Name="lambda-python-templated",
+            Name=event_name,
             ScheduleExpression=expression,
             Target=lambda_target,
             FlexibleTimeWindow=flex_window
         )
         print(result)
+        i=i+1
     return
 
 
@@ -92,8 +129,10 @@ def handler(event,context):
         if result['ResponseMetadata']['HTTPStatusCode'] != 200:
                 raise Exception(f"DynamoDB issue")
         surg_date = field_values["profile"]["surgery_date"]
+        sub = field_values["sub"]
         print("Read Surg Date: ", surg_date)
-        schedule_surveys(surg_date)
+        print("Read Sub: ", sub)
+        schedule_surveys(surg_date,sub)
         
         return {
             "statusCode":200,
