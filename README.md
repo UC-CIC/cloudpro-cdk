@@ -14,6 +14,10 @@ deploy *
 
 Please note, registration and login requires SES verified identities to be staged prior to testing as SES will be in Sandbox mode.  Go to SES-> Verified identities and add the email addresses you will be testing with prior to executing login.
 
+
+-- Boto 1.6.86 zip file created manually.
+-- Be sure to check the API key on your cfront deployment (inserted DUMMY needs updated)
+
 # Welcome to your CDK Python project!
 
 Baseline was generated with CDK for Python.

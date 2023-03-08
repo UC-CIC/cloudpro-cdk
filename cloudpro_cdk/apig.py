@@ -5,6 +5,7 @@ from aws_cdk import(
     Stack,
     aws_apigateway as apigateway,
     aws_lambda as lambda_,
+    aws_iam as iam,
     Duration
 )
 
@@ -24,6 +25,7 @@ class ApigStack(Stack):
 
 
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
+        layer_boto_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_boto_lib",layer_version_arn=self.node.try_get_context("layer_boto_arn"))
 
 
         
@@ -442,6 +444,18 @@ class ApigStack(Stack):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
+        fn_scheduler_processing = lambda_.Function(
+            self,"fn-scheduler-processing",
+            description="scheduler-processing", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/survey","scheduler_processing")),
+            environment={
+                "IDENTIFIER":"SCHEDULER.PROCESSING"
+            },
+            layers=[layer_boto_lib]
+        )
+        #"SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn
         #################################################################################
         # /user/{sub}
         #################################################################################
@@ -460,19 +474,52 @@ class ApigStack(Stack):
         )
         dynamodb_tables["user"].grant_read_data(fn_user_profile_get)
 
+
+
+        profrole = iam.Role(self, "Role",
+          assumed_by=iam.CompositePrincipal(
+            iam.ServicePrincipal("scheduler.amazonaws.com"),
+            iam.ServicePrincipal("lambda.amazonaws.com"),
+            iam.ServicePrincipal("events.amazonaws.com")
+            )
+        )
+
         fn_user_profile_put = lambda_.Function(
             self,"fn-user_profile-put",
             description="user_profile-put", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/user","user_profile_put")),
+            role=profrole,
             environment={
                 "TABLE_USER":dynamodb_tables["user"].table_name,
                 "IDENTIFIER":IDENTIFIER_USER,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn,
+                "SCHEDULER_PROCESSING_ROLE": fn_scheduler_processing.role.role_arn
             },
-            layers=[ layer_cloudpro_lib ]
+            layers=[ layer_cloudpro_lib,layer_boto_lib ]
         )
+
+        # in production you'd likely want to pair this down (IE dynamically generate the policy on event scheduling)
+        # technically should probably seperate on user profile creation to actually create an event and then trigger
+        # the scheduling mechanics so we can separate duties
+        fn_user_profile_put.role.attach_inline_policy(iam.Policy(self, "scheduler-policy",
+            statements=[iam.PolicyStatement(
+                actions=["scheduler:CreateSchedule"],
+                resources=["*"]
+            )             
+            ]
+        ))
+        fn_user_profile_put.role.attach_inline_policy(iam.Policy(self, "scheduler-pass-policy",
+            statements=[iam.PolicyStatement(
+                actions=["iam:PassRole"],
+                resources=[fn_scheduler_processing.role.role_arn]
+            )]
+        ))
+        
+
+
         dynamodb_tables["user"].grant_read_write_data(fn_user_profile_put)
 
         ###### Route Base = /user
