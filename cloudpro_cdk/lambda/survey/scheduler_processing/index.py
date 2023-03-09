@@ -7,6 +7,9 @@ import hashlib
 dynamodb = boto3.resource('dynamodb')
 
 TABLE_NAME_SURVEY=os.environ["TABLE_SURVEY"]
+TABLE_SURVEYS_AUDIT=os.environ["TABLE_SURVEY_AUDIT"]
+TABLE_STATE=os.environ["TABLE_STATE"]
+
 
 SURVEYS=["mobility","physical_function","upper_extrimity"] 
 
@@ -14,6 +17,11 @@ SURVEYS=["mobility","physical_function","upper_extrimity"]
 
 def build_payload(event):
     table = dynamodb.Table(TABLE_NAME_SURVEY)
+
+    table_state = dynamodb.Table(TABLE_STATE)
+    table_survey_audit = dynamodb.Table(TABLE_SURVEYS_AUDIT)
+
+
     sub = event["sub"]
     assigned = event["assigned"]
     due = event["due"]
@@ -34,9 +42,38 @@ def build_payload(event):
 
     # data exists, copy it over before we rewrite the doc
     # technically should probably patch in a production env to avoid race conditions
+    # should probably move the dynamo write/read out to an event too.
     if( 'Item' in result ):
         survey_payload["completed_surveys"] = result['Item']["completed_surveys"]
         survey_payload["open_surveys"] = result['Item']["open_surveys"]
+        for idx,group in enumerate(survey_payload["open_surveys"]):
+            for key in group.keys():
+                for sdx,survey in enumerate(survey_payload["open_surveys"][idx][key]):
+                    if survey_payload["open_surveys"][idx][key][sdx]["completed"] == False:
+                        survey_payload["open_surveys"][idx][key][sdx]["missed"] = True
+
+                    sid = survey_payload["open_surveys"][idx][key][sdx]["sid"]
+                    sid += survey_payload["open_surveys"][idx][key][sdx]["due"] 
+                    
+                    search_key = {
+                        'state_hash': sid
+                    }
+
+                    table_state.get_item(Key=search_key)
+                    state_payload=result["Item"]
+                    survey_info=survey
+
+                    audit_payload = {
+                        "sid":sid,
+                        "state":state_payload,
+                        "survey_info":survey
+                    }
+                    table_survey_audit.put_item ( Item=audit_payload  )
+
+
+
+
+        survey_payload["completed_surveys"].extend(survey_payload["open_surveys"])
     # add in new payload(s)
     staged_surveys = [
         {
@@ -75,7 +112,11 @@ def build_payload(event):
         }
     ]
 
-    survey_payload["open_surveys"].extend(staged_surveys)
+    #survey_payload["open_surveys"].extend(staged_surveys)
+
+    
+    survey_payload["open_surveys"] = staged_surveys
+
     return table.put_item ( Item=survey_payload  )
 
 def handler(event,context):

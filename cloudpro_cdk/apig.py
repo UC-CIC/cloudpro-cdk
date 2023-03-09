@@ -461,11 +461,15 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/survey","scheduler_processing")),
             environment={
                 "IDENTIFIER":"SCHEDULER.PROCESSING",
-                "TABLE_SURVEY": dynamodb_tables["survey"].table_name
+                "TABLE_SURVEY": dynamodb_tables["survey"].table_name,
+                "TABLE_SURVEY_AUDIT": dynamodb_tables["survey_audit"].table_name,
+                "TABLE_STATE": dynamodb_tables["state"].table_name
             },
             layers=[layer_boto_lib]
         )
         dynamodb_tables["survey"].grant_read_write_data(fn_scheduler_processing)
+        dynamodb_tables["survey_audit"].grant_read_write_data(fn_scheduler_processing)
+        dynamodb_tables["state"].grant_read_data(fn_scheduler_processing)
 
         # in production you'd likely want to pair this down (IE dynamically generate the policy on event scheduling)
         # technically should probably seperate on user profile creation to actually create an event and then trigger

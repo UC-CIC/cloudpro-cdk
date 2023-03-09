@@ -71,6 +71,9 @@ def schedule_surveys( surg_date: str, sub: str ):
         #entry = datetime.now() + timedelta(minutes=2)
         #assigned = entry.strftime("%Y-%m-%dT%H:%M:%S")
         ######
+
+        ### added retry at 0 just to support testing, live we will
+        # want to go to sqs or something with retry
         lambda_target = {
             "Arn": target_arn,
             "RoleArn":target_role,
@@ -82,7 +85,11 @@ def schedule_surveys( surg_date: str, sub: str ):
                     "surg_date":surg_date,
                     "header_tag":header_tags[i]
                 }
-            )
+            ),
+            'RetryPolicy': {
+                'MaximumEventAgeInSeconds': 0,
+                'MaximumRetryAttempts': 0
+            }
         }
         # at(2022-11-20T13:00:00)
         tstamp = entry.strftime("%Y-%m-%dT%H:%M:%S")
