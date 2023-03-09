@@ -40,6 +40,7 @@ def schedule_surveys( surg_date: str, sub: str ):
     event_dates.append( dt_obj + timedelta(days=10) )
     for i in range(1,13):
         event_dates.append( dt_obj + relativedelta(months=i) )
+        print( "Appending: ", (dt_obj + relativedelta(months=i)) )
     
 
     flex_window = { "Mode": "OFF" }
@@ -65,10 +66,10 @@ def schedule_surveys( surg_date: str, sub: str ):
     i = 0
     for entry in event_dates:
         assigned=entry.strftime("%Y-%m-%dT%H:%M:%S")
-        due=(entry - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S")
+        due=(entry + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S")
         ### for testing ==>
-        entry = datetime.now() + timedelta(minutes=2)
-        assigned = entry.strftime("%Y-%m-%dT%H:%M:%S")
+        #entry = datetime.now() + timedelta(minutes=2)
+        #assigned = entry.strftime("%Y-%m-%dT%H:%M:%S")
         ######
         lambda_target = {
             "Arn": target_arn,
@@ -97,6 +98,8 @@ def schedule_surveys( surg_date: str, sub: str ):
         )
         print(result)
         i=i+1
+        # for testing only generate one set of survey
+        break
     return
 
 
