@@ -596,9 +596,9 @@ class ApigStack(Stack):
          ###### Route Base = /survey
         public_route_survey=api_route.add_resource("survey")
         
-        # /user/{sub}
+        # /survey/{sub}
         public_route_survey_sub=public_route_survey.add_resource("{sub}")
-        # GET: /user/{sub}
+        # GET: /survey/{sub}
         survey_sub_get_integration=apigateway.LambdaIntegration(fn_survey_get)
         method_survey=public_route_survey_sub.add_method(
             "GET",survey_sub_get_integration,
@@ -606,6 +606,43 @@ class ApigStack(Stack):
             api_key_required=True
         )
 
+
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+        #################################################################################
+        # /audit/{sid}
+        #################################################################################
+        fn_audit_get = lambda_.Function(
+            self,"fn-audit-get",
+            description="audit-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/audit","audit_sid_get")),
+            environment={
+                "TABLE_AUDIT":dynamodb_tables["survey_audit"].table_name,
+                "IDENTIFIER":IDENTIFIER_SURVEY,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["survey_audit"].grant_read_data(fn_audit_get)
+
+         ###### Route Base = /audit
+        public_route_survey=api_route.add_resource("audit")
+        
+        # /audit/{sid}
+        public_route_audit_sid=public_route_survey.add_resource("{sid}")
+        # GET: /audit/{sid}
+        audit_sid_get_integration=apigateway.LambdaIntegration(fn_audit_get)
+        method_survey=public_route_audit_sid.add_method(
+            "GET",audit_sid_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
