@@ -45,7 +45,17 @@ class DynamodbStack(Stack):
             #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
-
+        dynamo_pt_reporting = dynamodb.Table(self,"dynamo-pt-reporting",
+            partition_key=dynamodb.Attribute(name="sub", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+        dynamo_aggs = dynamodb.Table(self,"dynamo-aggs",
+            partition_key=dynamodb.Attribute(name="agg", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+   
         self.tables = {
             "questionnaire" : dynamo_questionnaire,
             "scoring" : dynamo_scoring,
@@ -53,7 +63,9 @@ class DynamodbStack(Stack):
             "user" : dynamo_user,
             "user_staged": dynamo_user_staged,
             "survey":dynamo_survey,
-            "survey_audit":dynamo_survey_audit
+            "survey_audit":dynamo_survey_audit,
+            "pt_reporting":dynamo_pt_reporting,
+            "aggregates":dynamo_aggs
         }
         
         

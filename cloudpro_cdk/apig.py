@@ -19,6 +19,7 @@ class ApigStack(Stack):
         IDENTIFIER_PRO_STATE="custom.lambda.pro.state"
         IDENTIFIER_USER="custom.lambda.user.profile"
         IDENTIFIER_SURVEY="custom.lambda.survey"
+        IDENTIFIER_AGGREGATES="custom.lambda.aggregates"
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
@@ -644,6 +645,48 @@ class ApigStack(Stack):
             api_key_required=True
         )
 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+
+
+        #################################################################################
+        # /audit/{sid}
+        #################################################################################
+        
+        fn_aggs_get = lambda_.Function(
+            self,"fn-aggs-get",
+            description="aggs-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/aggregates","agg_get")),
+            environment={
+                "TABLE_AGGREGATES":dynamodb_tables["aggregates"].table_name,
+                "IDENTIFIER":IDENTIFIER_AGGREGATES,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["aggregates"].grant_read_data(fn_aggs_get)
+
+         ###### Route Base = /aggregates
+        public_route_aggregates=api_route.add_resource("aggregates")
+        
+        # /audit/{sid}
+        public_route_aggregates_agg=public_route_aggregates.add_resource("{agg}")
+        # GET: /audit/{sid}
+        aggregate_agg_get_integration=apigateway.LambdaIntegration(fn_aggs_get)
+        method_agg=public_route_aggregates_agg.add_method(
+            "GET",aggregate_agg_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+        
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
