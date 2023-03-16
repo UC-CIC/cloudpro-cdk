@@ -20,6 +20,7 @@ class ApigStack(Stack):
         IDENTIFIER_USER="custom.lambda.user.profile"
         IDENTIFIER_SURVEY="custom.lambda.survey"
         IDENTIFIER_AGGREGATES="custom.lambda.aggregates"
+        IDENTIFIER_PTREPORTING="custom.lambda.ptreporting"
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
@@ -655,7 +656,7 @@ class ApigStack(Stack):
 
 
         #################################################################################
-        # /audit/{sid}
+        # /aggregates/{agg}
         #################################################################################
         
         fn_aggs_get = lambda_.Function(
@@ -676,9 +677,9 @@ class ApigStack(Stack):
          ###### Route Base = /aggregates
         public_route_aggregates=api_route.add_resource("aggregates")
         
-        # /audit/{sid}
+        # /aggregates/{agg}
         public_route_aggregates_agg=public_route_aggregates.add_resource("{agg}")
-        # GET: /audit/{sid}
+        # GET:/aggregates/{agg}
         aggregate_agg_get_integration=apigateway.LambdaIntegration(fn_aggs_get)
         method_agg=public_route_aggregates_agg.add_method(
             "GET",aggregate_agg_get_integration,
@@ -686,7 +687,40 @@ class ApigStack(Stack):
             api_key_required=True
         )
 
+        #################################################################################
+        # /ptreporting/{sub}
+        #################################################################################
         
+        fn_ptreport_get = lambda_.Function(
+            self,"fn-ptreport-get",
+            description="ptreport-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/ptreporting","ptreport_sub_get")),
+            environment={
+                "TABLE_PTREPORTING":dynamodb_tables["pt_reporting"].table_name,
+                "IDENTIFIER":IDENTIFIER_PTREPORTING,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["pt_reporting"].grant_read_data(fn_ptreport_get)
+
+         ###### Route Base = /ptreporting
+        public_route_ptreporting=api_route.add_resource("ptreporting")
+        
+        # /ptreporting/{sub}
+        public_route_ptreporting_sub=public_route_ptreporting.add_resource("{sub}")
+        # GET:/ptreporting/{sub}
+        ptreporting_ptreport_get_integration=apigateway.LambdaIntegration(fn_ptreport_get)
+        method_ptreport_sub_get=public_route_ptreporting_sub.add_method(
+            "GET",ptreporting_ptreport_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
