@@ -34,7 +34,7 @@ class DynamodbStack(Stack):
             #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
-
+        
         dynamo_survey= dynamodb.Table(self,"dynamo-survey",
             partition_key=dynamodb.Attribute(name="sub", type=dynamodb.AttributeType.STRING),
             #sort_key=dynamodb.Attribute(name="state_hash", type=dynamodb.AttributeType.STRING),
