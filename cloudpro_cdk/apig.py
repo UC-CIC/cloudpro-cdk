@@ -23,6 +23,7 @@ class ApigStack(Stack):
         IDENTIFIER_PTREPORTING="custom.lambda.ptreporting"
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
+        IDENTIFIER_NOTIFICATIONS="custom.lambda.notifications"
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
 
 
@@ -719,6 +720,38 @@ class ApigStack(Stack):
             api_key_required=True
         )
 
+
+        #################################################################################
+        # /notifications/{sub}
+        #################################################################################
+        
+        fn_notifications_get = lambda_.Function(
+            self,"fn-notifications-get",
+            description="notifications-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/notifications","notification_get_sub")),
+            environment={
+                "TABLE_NOTIFICATIONS":dynamodb_tables["notifications"].table_name,
+                "IDENTIFIER":IDENTIFIER_NOTIFICATIONS,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["notifications"].grant_read_data(fn_notifications_get)
+
+        ###### Route Base = /notifications
+        public_route_notifications=api_route.add_resource("notifications")
+        
+        # /notifications/{sub}
+        public_route_notifications_sub=public_route_notifications.add_resource("{sub}")
+        # GET:/ptreporting/{sub}
+        ptreporting_notifications_get_integration=apigateway.LambdaIntegration(fn_notifications_get)
+        method_notifications_sub_get=public_route_notifications_sub.add_method(
+            "GET",ptreporting_notifications_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

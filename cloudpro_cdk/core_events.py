@@ -17,8 +17,10 @@ class CoreEvents(Stack):
         IDENT_PRO_STATE_INIT="custom.lambda.pro.state"
         SOURCE_PRO_STATE_INIT="custom.cloudpro.core"
         SOURCE_PT_COMPLETE_SURVEY="custom.cloudpro.core.survey.complete"
+        SOURCE_NOTIFICATIONS="custom.cloudpro.notifications"
         DETAIL_TYPE_PROPACK_STATE_INIT="State Init"
         DETAIL_TYPE_PT_SURVEY_COMPLETE="Survey Completed"
+        DETAIL_TYPE_NOTIFICATIONS="New Notification"
 
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
 
@@ -92,6 +94,41 @@ class CoreEvents(Stack):
             targets.LambdaFunction(
                 fn_survey_completed,
                 dead_letter_queue=sqs_ptreport_dlq,
+                max_event_age=Duration.hours(2), 
+                retry_attempts=2
+            )
+        )
+
+
+        fn_notification_create= lambda_.Function(
+            self,"fn-notification-create",
+            description="notificatin-create", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/notifications","create_notification")),
+            environment={
+                "IDENTIFIER": SOURCE_NOTIFICATIONS,
+                "TABLE_NOTIFICATIONS":dynamodb_tables["notifications"].table_name
+            },
+            layers=[layer_cloudpro_lib]
+        )
+
+        dynamodb_tables["notifications"].grant_read_write_data(fn_notification_create)
+
+        sqs_notification_dlq = sqs.Queue(self,"sqs-notifications-dlq")
+        rule_notification_create = events.Rule(self, "cdk-rule-notification-create",
+            description="Created notification.",
+            event_pattern=events.EventPattern(
+                #source=[SOURCE_PT_COMPLETE_SURVEY],
+                detail_type=[DETAIL_TYPE_NOTIFICATIONS]
+            ),
+            event_bus=ebus_pro
+        ) 
+        # Rule match: Set target to lambda processor to extract files
+        rule_notification_create.add_target(
+            targets.LambdaFunction(
+                fn_notification_create,
+                dead_letter_queue=sqs_notification_dlq,
                 max_event_age=Duration.hours(2), 
                 retry_attempts=2
             )
