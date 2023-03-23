@@ -87,7 +87,7 @@ def schedule_surveys( surg_date: str, sub: str ):
                 }
             ),
             'RetryPolicy': {
-                'MaximumEventAgeInSeconds': 0,
+                'MaximumEventAgeInSeconds': 60,
                 'MaximumRetryAttempts': 0
             }
         }

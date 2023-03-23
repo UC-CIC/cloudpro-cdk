@@ -79,6 +79,8 @@ def handler(event, context):
     except Exception as e:
         print(e)
 
+    #attempting to set to false here
+    #event['request']['userAttributes']['custom:isEmployeeDec'] = "1"
     print(event, "-----end---------")
    
     return event
