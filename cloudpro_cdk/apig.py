@@ -753,6 +753,64 @@ class ApigStack(Stack):
             api_key_required=True
         )
 
+        #################################################################################
+        # /surgeon/init
+        #################################################################################
+        
+        fn_surgeon_init_post = lambda_.Function(
+            self,"fn-surgeons-bd-init-post",
+            description="surgeons-bd-init-post", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/surgeon","backdoor_init_post")),
+            environment={
+                "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
+                "IDENTIFIER":"BD_SURGEONS_INIT",
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["surgeons"].grant_read_write_data(fn_surgeon_init_post)
+
+        fn_surgeon_list = lambda_.Function(
+            self,"fn-surgeons-list",
+            description="surgeons-list", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/surgeon","all_surgeons_get")),
+            environment={
+                "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
+                "IDENTIFIER":"SURGEONS_LIST",
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["surgeons"].grant_read_data(fn_surgeon_list)
+
+        ###### Route Base = /surgeon
+        public_route_surgeon=api_route.add_resource("surgeon")
+        
+        # /surgeon/init
+        public_route_surgeon_init=public_route_surgeon.add_resource("init")
+        # POST:/surgeon/init
+        surgeon_init_post_integration=apigateway.LambdaIntegration(fn_surgeon_init_post)
+        method_notifications_sub_get=public_route_surgeon_init.add_method(
+            "POST",surgeon_init_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+
+        # /surgeon/list
+        public_route_surgeon_list=public_route_surgeon.add_resource("list")
+        # GET:/surgeon/init
+        surgeon_list_get_integration=apigateway.LambdaIntegration(fn_surgeon_list)
+        method_notifications_sub_get=public_route_surgeon_list.add_method(
+            "GET",surgeon_list_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

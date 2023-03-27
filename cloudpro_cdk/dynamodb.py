@@ -62,6 +62,21 @@ class DynamodbStack(Stack):
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
 
+
+        dynamo_surgeons = dynamodb.Table(self,"dynamo-surgeons",
+            partition_key=dynamodb.Attribute(name="sub", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="date", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+
+        dynamo_hospitals = dynamodb.Table(self,"dynamo-hospitals",
+            partition_key=dynamodb.Attribute(name="hid", type=dynamodb.AttributeType.STRING),
+            #sort_key=dynamodb.Attribute(name="date", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+
+
+
         self.tables = {
             "questionnaire" : dynamo_questionnaire,
             "scoring" : dynamo_scoring,
@@ -72,7 +87,9 @@ class DynamodbStack(Stack):
             "survey_audit":dynamo_survey_audit,
             "pt_reporting":dynamo_pt_reporting,
             "aggregates":dynamo_aggs,
-            "notifications":dynamo_notifications
+            "notifications":dynamo_notifications,
+            "surgeons":dynamo_surgeons,
+            "hospitals":dynamo_hospitals
         }
         
         
