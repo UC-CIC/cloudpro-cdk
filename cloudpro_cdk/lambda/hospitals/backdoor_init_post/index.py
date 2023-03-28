@@ -41,9 +41,14 @@ def init_hospital( field_values:json ):
 def handler(event,context):
     '''
         {
-            "hid":"111-111",
+            "hid":"1",
             "hospital_name":"Most General Named Hospital",
-            "surgeons":[{"sub","1111-111","name","doctor doctor"}]
+            "surgeons":[
+                {
+                    "sub":"1111-111-111-111-111",
+                    "name":"Dr. James Sinclair"
+                }
+            ]
         }
     '''
     init_payload=json.loads(event["body"])
