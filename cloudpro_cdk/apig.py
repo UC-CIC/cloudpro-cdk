@@ -754,7 +754,7 @@ class ApigStack(Stack):
         )
 
         #################################################################################
-        # /surgeon/init
+        # /surgeon/
         #################################################################################
         
         fn_surgeon_init_post = lambda_.Function(
@@ -794,7 +794,7 @@ class ApigStack(Stack):
         public_route_surgeon_init=public_route_surgeon.add_resource("init")
         # POST:/surgeon/init
         surgeon_init_post_integration=apigateway.LambdaIntegration(fn_surgeon_init_post)
-        method_notifications_sub_get=public_route_surgeon_init.add_method(
+        method_surgeon_init=public_route_surgeon_init.add_method(
             "POST",surgeon_init_post_integration,
             authorizer=auth,
             api_key_required=True
@@ -805,12 +805,95 @@ class ApigStack(Stack):
         public_route_surgeon_list=public_route_surgeon.add_resource("list")
         # GET:/surgeon/init
         surgeon_list_get_integration=apigateway.LambdaIntegration(fn_surgeon_list)
-        method_notifications_sub_get=public_route_surgeon_list.add_method(
+        method_surgeon_list=public_route_surgeon_list.add_method(
             "GET",surgeon_list_get_integration,
             authorizer=auth,
             api_key_required=True
         )
 
+
+        #################################################################################
+        # /hospital/
+        #################################################################################
+        fn_hospital_init_post = lambda_.Function(
+            self,"fn-hospitals-bd-init-post",
+            description="hospitals-bd-init-post", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/hospitals","backdoor_init_post")),
+            environment={
+                "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
+                "IDENTIFIER":"BD_HOSPITALS_INIT",
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["hospitals"].grant_read_write_data(fn_hospital_init_post)
+
+        fn_hospital_list = lambda_.Function(
+            self,"fn-hospital-list",
+            description="hospital-list", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/hospitals","all_hospitals_get")),
+            environment={
+                "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
+                "IDENTIFIER":"HOSPITALS_LIST",
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["hospitals"].grant_read_data(fn_hospital_list)
+
+        fn_hospital_hid_get = lambda_.Function(
+            self,"fn-hospital-hid-get",
+            description="hospital-hid-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/hospitals","hospital_hid_get")),
+            environment={
+                "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
+                "IDENTIFIER":"HOSPITALS_LIST",
+                "CORS_ALLOW_UI":FULL_CFRONT_URL
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["hospitals"].grant_read_data(fn_hospital_hid_get)
+
+        ###### Route Base = /hospitals
+        public_route_hospital=api_route.add_resource("hospital")
+        
+        # /hospital/init
+        public_route_hospital_init=public_route_hospital.add_resource("init")
+        # POST:/surgeon/init
+        hospital_init_post_integration=apigateway.LambdaIntegration(fn_hospital_init_post)
+        method_hospital_init=public_route_hospital_init.add_method(
+            "POST",hospital_init_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+
+        # /hospital/list
+        public_route_hospital_list=public_route_hospital.add_resource("list")
+        # GET:/hospital/init
+        hospital_list_get_integration=apigateway.LambdaIntegration(fn_hospital_list)
+        method_hospital_list=public_route_hospital_list.add_method(
+            "GET",hospital_list_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+        # GET:/hospital/by_hid/
+        public_route_hospital_by_hid=public_route_hospital.add_resource("hid")
+        # GET:/hospital/by_hid/{hid}
+        public_route_hospital_by_hid_hidid=public_route_hospital_by_hid.add_resource("{hid}")
+        public_route_hospital_by_hid_hidid_integration=apigateway.LambdaIntegration(fn_hospital_hid_get)
+        method_notifications_sub_get=public_route_hospital_by_hid_hidid.add_method(
+            "GET",public_route_hospital_by_hid_hidid_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
