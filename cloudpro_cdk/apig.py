@@ -26,6 +26,9 @@ class ApigStack(Stack):
         IDENTIFIER_NOTIFICATIONS="custom.lambda.notifications"
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
 
+        ALLOW_LOCALHOST_ORIGIN=True
+        LOCALHOST_ORIGIN="http://localhost:3000"
+
 
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
         layer_boto_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_boto_lib",layer_version_arn=self.node.try_get_context("layer_boto_arn"))
@@ -40,7 +43,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/apig","authorizer_core")),
             environment={
                 "IDENTIFIER":IDENTIFIER_AUTHORIZER,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else ""
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -53,6 +57,7 @@ class ApigStack(Stack):
             environment={
                 "IDENTIFIER":IDENTIFIER_AUTHORIZER_DEBUG,
                 "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
                 "DEBUG_TOKEN":self.node.try_get_context("debug_token")
             },
             layers=[ layer_cloudpro_lib ]
@@ -78,7 +83,6 @@ class ApigStack(Stack):
 
 
 
-
         core_api = apigateway.RestApi(
             self,"core-api",
             endpoint_configuration=apigateway.EndpointConfiguration(
@@ -86,7 +90,7 @@ class ApigStack(Stack):
             ),
             default_cors_preflight_options=apigateway.CorsOptions(
                 allow_methods=['GET', 'OPTIONS','PUT','PATCH','POST'],
-                allow_origins=[FULL_CFRONT_URL])
+                allow_origins=[FULL_CFRONT_URL, LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else ""])
         )
  
     
@@ -130,7 +134,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -149,7 +154,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -170,7 +176,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -230,7 +237,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_SCORING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -249,7 +257,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_SCORING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -270,7 +279,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_SCORING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -328,7 +338,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -346,7 +357,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -365,7 +377,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -385,7 +398,8 @@ class ApigStack(Stack):
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -520,7 +534,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_USER":dynamodb_tables["user"].table_name,
                 "IDENTIFIER":IDENTIFIER_USER,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -540,6 +555,7 @@ class ApigStack(Stack):
                 "TABLE_USER":dynamodb_tables["user"].table_name,
                 "IDENTIFIER":IDENTIFIER_USER,
                 "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
                 "SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn,
                 "SCHEDULER_PROCESSING_ROLE": fn_scheduler_processing.role.role_arn
             },
@@ -590,7 +606,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
                 "IDENTIFIER":IDENTIFIER_SURVEY,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -628,7 +645,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_AUDIT":dynamodb_tables["survey_audit"].table_name,
                 "IDENTIFIER":IDENTIFIER_SURVEY,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -669,7 +687,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_AGGREGATES":dynamodb_tables["aggregates"].table_name,
                 "IDENTIFIER":IDENTIFIER_AGGREGATES,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -701,7 +720,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_PTREPORTING":dynamodb_tables["pt_reporting"].table_name,
                 "IDENTIFIER":IDENTIFIER_PTREPORTING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -734,7 +754,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_NOTIFICATIONS":dynamodb_tables["notifications"].table_name,
                 "IDENTIFIER":IDENTIFIER_NOTIFICATIONS,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -766,7 +787,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
                 "IDENTIFIER":"BD_SURGEONS_INIT",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -781,7 +803,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
                 "IDENTIFIER":"SURGEONS_LIST",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -824,7 +847,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
                 "IDENTIFIER":"BD_HOSPITALS_INIT",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -839,7 +863,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
                 "IDENTIFIER":"HOSPITALS_LIST",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -854,7 +879,8 @@ class ApigStack(Stack):
             environment={
                 "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
                 "IDENTIFIER":"HOSPITALS_LIST",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
             },
             layers=[ layer_cloudpro_lib ]
         )
