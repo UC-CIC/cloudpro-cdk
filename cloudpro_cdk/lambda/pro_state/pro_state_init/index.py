@@ -171,7 +171,7 @@ def handler(event,context):
         return {
             "statusCode":200,
             "headers": CORS_HEADERS,
-            "body": json.dumps({},cls=JSONEncoder)
+            "body": json.dumps(payload,cls=JSONEncoder)
         }
     except Exception as e:
         return {
