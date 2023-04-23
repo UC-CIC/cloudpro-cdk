@@ -419,6 +419,7 @@ class ApigStack(Stack):
         )
 
 
+        '''
         # POST: /state/init/{state_hash}/{propack}
         public_init_route_state=public_route_state.add_resource("init")
         public_init_route_state_hash=public_init_route_state.add_resource("{state_hash}")
@@ -430,8 +431,21 @@ class ApigStack(Stack):
             authorizer=auth,
             api_key_required=True
         )
-
-
+        '''
+        # POST: /state/init/{propack}/{state_hash}
+        
+        public_init_route_state=public_route_state.add_resource("init")
+        public_init_route_pro_pack=public_init_route_state.add_resource("{pro_pack}")
+        public_init_route_state_hash=public_init_route_pro_pack.add_resource("{state_hash}")
+        
+        # POST:
+        state_statehash_get_integration=apigateway.LambdaIntegration(fn_pro_state_init_post)
+        method_state_init=public_init_route_state_hash.add_method(
+            "POST",state_statehash_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+        
 
         # PATCH: /state/{state_hash}
         state_statehash_patch_integration=apigateway.LambdaIntegration(fn_pro_state_statehash_patch)
