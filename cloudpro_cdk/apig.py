@@ -409,7 +409,7 @@ class ApigStack(Stack):
         ###### Route Base = /state
         public_route_state=api_route.add_resource("state")
 
-        # PUT: /state/update
+        # PUT: /state
         state_update_put_integration=apigateway.LambdaIntegration(fn_pro_state_update_put)
         method_state_prohash=public_route_state.add_method(
             "PUT",state_update_put_integration,
