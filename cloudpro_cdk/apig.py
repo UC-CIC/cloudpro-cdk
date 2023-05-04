@@ -639,6 +639,23 @@ class ApigStack(Stack):
         )
         dynamodb_tables["survey"].grant_read_data(fn_survey_get)
 
+        fn_survey_patch = lambda_.Function(
+            self,"fn-survey-patch",
+            description="survey-patch", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/survey","survey_patch")),
+            environment={
+                "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
+                "IDENTIFIER":IDENTIFIER_SURVEY,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["survey"].grant_read_write_data(fn_survey_patch)
+
+
          ###### Route Base = /survey
         public_route_survey=api_route.add_resource("survey")
         
@@ -651,7 +668,13 @@ class ApigStack(Stack):
             authorizer=auth,
             api_key_required=True
         )
-
+        # PATCH: /survey/{sub}
+        survey_sub_patch_integration=apigateway.LambdaIntegration(fn_survey_patch)
+        method_survey=public_route_survey_sub.add_method(
+            "PATCH",survey_sub_patch_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
