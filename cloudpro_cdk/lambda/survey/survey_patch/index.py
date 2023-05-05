@@ -48,7 +48,7 @@ def read_survey( sub:str ):
 
 def sweep_to_complete( sub, db_payload, fields ):
     sid = fields["sid"]
-    assigned_date = fields["assigned_date"]
+    due_date = fields["due_date"]
 
     #print("SID:",sid)
     #print("AD:",assigned_date)
@@ -65,12 +65,13 @@ def sweep_to_complete( sub, db_payload, fields ):
         survey_payload["completed_surveys"] = db_payload["Item"]["completed_surveys"]
         survey_payload["open_surveys"] = db_payload['Item']["open_surveys"]
 
+        closed_payload={}
         store_key =""
         store_idx = -1
         for idx,group in enumerate(survey_payload["open_surveys"]):
             for key in group.keys():
                 for sdx,survey in enumerate(survey_payload["open_surveys"][idx][key]):
-                    if survey_payload["open_surveys"][idx][key][sdx]["sid"] == sid and survey_payload["open_surveys"][idx][key][sdx]["assigned"] == assigned_date:
+                    if survey_payload["open_surveys"][idx][key][sdx]["sid"] == sid and survey_payload["open_surveys"][idx][key][sdx]["due"] == due_date:
                         closed_payload = survey_payload["open_surveys"][idx][key][sdx]
                         closed_payload["completed"] = True
                         store_key=key
