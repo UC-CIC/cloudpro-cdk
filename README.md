@@ -18,6 +18,10 @@ Please note, registration and login requires SES verified identities to be stage
 -- Boto 1.6.86 zip file created manually. Required to support some of the event bridge scheduler items.
 -- Be sure to check the API key on your cfront deployment (inserted DUMMY needs updated)
 
+# Detailed Docs
+Detailed docs are housed in a separate repo.
+
+
 # Welcome to your CDK Python project!
 
 Baseline was generated with CDK for Python.
