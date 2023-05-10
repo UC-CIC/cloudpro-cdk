@@ -58,7 +58,7 @@ def read_formula( scoring:json, link_id:str ):
 
 def evaluate_formula( field_values: Dict[Any, Any], formula:str ):
     # we've already sanitized the formula, but just to be super safe, we resanitize from DB grab
-    sanitized_formula = scoring_safety.ScoringSafety(formula)
+    sanitized_formula = ScoringSafety(formula)
 
     cpro_loader=field_values
     score = eval(sanitized_formula.formula)

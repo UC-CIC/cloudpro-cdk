@@ -24,6 +24,7 @@ class ApigStack(Stack):
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
         IDENTIFIER_NOTIFICATIONS="custom.lambda.notifications"
+
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
 
         ALLOW_LOCALHOST_ORIGIN=True
@@ -264,6 +265,25 @@ class ApigStack(Stack):
         )
         dynamodb_tables["scoring"].grant_read_data(fn_pro_scoring_linkid_get)
 
+        #################################################################################
+        # /scoring/evaluate/{link_id}
+        #################################################################################
+        fn_pro_scoring_evaluate_post = lambda_.Function(
+            self,"fn-pro-scoring-evaluate-post",
+            description="pro-scoring-evaluate-post", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_evaluate_post")),
+            environment={
+                "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
+                "IDENTIFIER":IDENTIFIER_PRO_SCORING,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["scoring"].grant_read_data(fn_pro_scoring_evaluate_post)
+
 
         #################################################################################
         # *WARNING* For development purposes only. Pulls entire dynamo table. Costly call
@@ -299,6 +319,19 @@ class ApigStack(Stack):
             authorizer=auth,
             api_key_required=True
         )
+
+
+        # POST: /scoring/evaluate/{link_id}
+        public_route_scoring_evaluate=public_route_scoring.add_resource("evaluate")
+        public_route_scoring_evaluate_link_id=public_route_scoring_evaluate.add_resource("{link_id}")
+        scoring_prohash_evaluate_post_integration=apigateway.LambdaIntegration(fn_pro_scoring_evaluate_post)
+        method_scoring_evaluate_link_id=public_route_scoring_evaluate_link_id.add_method(
+            "POST",scoring_prohash_evaluate_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+
         # /scoring/{pro_hash}
         public_route_scoring_prohash=public_route_scoring.add_resource("{pro_hash}")
          # GET: /scoring/{pro_hash}
