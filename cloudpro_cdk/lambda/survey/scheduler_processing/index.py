@@ -58,15 +58,18 @@ def build_payload(event):
                     search_key = {
                         'state_hash': sid
                     }
-
-                    table_state.get_item(Key=search_key)
-                    state_payload=result["Item"]
-                    survey_info=survey
+                    print("state-search:",search_key)
+                    result = table_state.get_item(Key=search_key)
+                    state_payload={}
+                    try:
+                        state_payload=result["Item"]
+                    except:
+                        pass
 
                     audit_payload = {
                         "sid":sid,
                         "state":state_payload,
-                        "survey_info":survey
+                        "survey_info":survey_payload["open_surveys"][idx][key][sdx]
                     }
                     table_survey_audit.put_item ( Item=audit_payload  )
 

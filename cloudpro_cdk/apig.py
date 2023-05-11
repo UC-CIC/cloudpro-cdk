@@ -680,6 +680,8 @@ class ApigStack(Stack):
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/survey","survey_patch")),
             environment={
                 "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
+                "TABLE_AUDIT":dynamodb_tables["survey_audit"].table_name,
+                "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_SURVEY,
                 "CORS_ALLOW_UI":FULL_CFRONT_URL,
                 "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
@@ -687,7 +689,8 @@ class ApigStack(Stack):
             layers=[ layer_cloudpro_lib ]
         )
         dynamodb_tables["survey"].grant_read_write_data(fn_survey_patch)
-
+        dynamodb_tables["state"].grant_read_data(fn_survey_patch)
+        dynamodb_tables["survey_audit"].grant_read_write_data(fn_survey_patch)
 
          ###### Route Base = /survey
         public_route_survey=api_route.add_resource("survey")

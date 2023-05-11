@@ -7,7 +7,8 @@ from json_encoder.json_encoder import JSONEncoder
 
 dynamodb = boto3.resource('dynamodb')
 table_name=os.environ["TABLE_SURVEY"]
-
+TABLE_AUDIT_NAME=os.environ["TABLE_AUDIT"]
+TABLE_STATE_NAME=os.environ["TABLE_STATE"]
 
 CORS_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -47,6 +48,9 @@ def read_survey( sub:str ):
     return table.get_item(Key=search_key)
 
 def sweep_to_complete( sub, db_payload, fields ):
+    table_survey_audit = dynamodb.Table(TABLE_AUDIT_NAME)
+    table_survey_state = dynamodb.Table(TABLE_STATE_NAME)
+
     sid = fields["sid"]
     due_date = fields["due_date"]
 
@@ -80,6 +84,24 @@ def sweep_to_complete( sub, db_payload, fields ):
                         #print("KEY=",key)
                         #print("SDX=",sdx)
                         #pass
+                        
+                        search_key = {
+                            'state_hash': sid + closed_payload["due"]
+                        }
+                        print("state-search:",search_key)
+                        result = table_survey_state.get_item(Key=search_key)
+                        state_payload={}
+                        try:
+                            state_payload=result["Item"]
+                        except:
+                            pass
+                        audit_payload = {
+                            "sid":sid + closed_payload["due"],
+                            "state":state_payload,
+                            "survey_info":closed_payload
+                        }
+                        table_survey_audit.put_item ( Item=audit_payload  )
+                    
                         break
         for idx,survey_set in enumerate(survey_payload["completed_surveys"]):
             for key in survey_set:
