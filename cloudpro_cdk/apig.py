@@ -32,7 +32,7 @@ class ApigStack(Stack):
 
 
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
-        layer_boto_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_boto_lib",layer_version_arn=self.node.try_get_context("layer_boto_arn"))
+        #layer_boto_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_boto_lib",layer_version_arn=self.node.try_get_context("layer_boto_arn"))
 
 
         
@@ -541,7 +541,8 @@ class ApigStack(Stack):
                 "TABLE_SURVEY_AUDIT": dynamodb_tables["survey_audit"].table_name,
                 "TABLE_STATE": dynamodb_tables["state"].table_name
             },
-            layers=[layer_boto_lib]
+            #layers=[layer_boto_lib]
+            layers=[]
         )
         dynamodb_tables["survey"].grant_read_write_data(fn_scheduler_processing)
         dynamodb_tables["survey_audit"].grant_read_write_data(fn_scheduler_processing)
@@ -618,7 +619,8 @@ class ApigStack(Stack):
                 "SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn,
                 "SCHEDULER_PROCESSING_ROLE": fn_scheduler_processing.role.role_arn
             },
-            layers=[ layer_cloudpro_lib,layer_boto_lib ]
+            #layers=[ layer_cloudpro_lib,layer_boto_lib ]
+            layers=[layer_cloudpro_lib]
         )
 
 

@@ -14,20 +14,13 @@ from cloudpro_cdk.cfront_apig import CfrontApig
 from cloudpro_cdk.cfront_userportal import CfrontUserPortal
 from cloudpro_cdk.cognito import CognitoStack
 
-#from cloudpro_cdk.tester import TesterStack
-
-
 
 app = cdk.App()
 
-
-
-
-dynamodb_stack = DynamodbStack(app, "cdk-dynamodb-stack")
 LayersStack(app, "cdk-layers-stack")
+dynamodb_stack = DynamodbStack(app, "cdk-dynamodb-stack")
 
 
-#tester_stack = TesterStack(app,"cdk-tester-stack")
 
 event_bus_stack=EventBus(app, "cdk-event-bus-stack")
 propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)

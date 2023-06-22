@@ -18,10 +18,14 @@ class LayersStack(Stack):
             layer_version_name="layer_cloudpro_lib"
         )
 
-        layer_boto_1_6_86 = lambda_.LayerVersion(
+
+        # No longer required as version is no longer expiremental
+        '''
+        layer_boto_1_26_86 = lambda_.LayerVersion(
             self, "layer_boto_lib",
-            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/custom_packages/layers","boto_1_6_86.zip")),
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/custom_packages/layers","boto_1_26_86.zip")),
             compatible_runtimes=[lambda_.Runtime.PYTHON_3_9],
             description="Bumped boto version for event scheduler support",
             layer_version_name="layer_boto_lib"
         )
+        '''

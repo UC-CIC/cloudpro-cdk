@@ -1,3 +1,44 @@
+# Windows Setup Details
+0) Install tar
+1) Install Node 18
+2) Install aws cli
+3) Install python 3.9.13
+4) Make a new directory
+5) Clone cloudpro-cdk repo
+6) CD into directory
+7) create a venv
+```
+python -m venv .venv
+```
+8) Activate virtual environment
+```
+source.bat
+```
+9)  Install requirements
+```
+pip install -r requirements.txt
+```
+10) Set access to your AWS Cloud Account
+```
+SET AWS_ACCESS_KEY_ID={your_access_key_id}
+SET AWS_SECRET_ACCESS_KEY={your_secret_access_key}
+SET AWS_SESSION_TOKEN={your_session_token}
+```
+11) Bootstrap CDK
+```
+cdk bootstrap --context layer_arn=DUMMY --context layer_boto_arn=DUMMY  --context XKEY=DUMMY --context debug_token=DUMMY
+```
+12) Build associated python layer deployables
+```
+build_layers.bat
+```
+13) [Skippable step]; originally, this project required an expiremental version of boto3 (v1.26.86) to support event bridge scheduling; however, at time of release, this was no longer required. This step initially required the manual creation of the boto3 package for layers.  The zip file would be required to be placed in ./cloudpro_cdk/custom_packages/layers/boto_1.26_86.zip.  Layers.py contains the now commented out code that referenced this file.
+14) Update destroy.bat and deploy.bat values for XKEY and debug_token to an alphanumeric 20+ character secure string. XKEY in destroy must match XKEY in deploy; debug_token in destroy must match debug_token in deploy.
+15) As an "initial staging", the lambda layers stack is required to be deployed.
+```
+deploy cdk-layers-stack
+```
+
 # CloudPRO
 
 "One click" deploy of CloudPRO.
