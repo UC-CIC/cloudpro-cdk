@@ -49,7 +49,7 @@ deploy.bat *
 21) Validate extraction; cdk-propack-stack-bucketpropack will now have a folder called propack
 22) Validate database load; this may take a few minutes for the event to trigger.  Check cdk-dynamodb-stack-dynamoquestionnaire & cdk-dynamodb-stack-scoring
 23) Sync your API key from API gateway to the cloudfront distribution pointing to your api gateway (*.execute-api.*) by editting the origin and then updating DUMMY on x-api-key to the appropriate value.  Save your changes.  For convenience, you can now update your deploy/destroy script with this value.
-24) Your backend is deployed! Proceed to frontend deployment described in the appropriate branch (TLDR; s3deploy.bat cdk-userportal-stack-bucketuserportal)
+24) Your backend is deployed! Proceed to frontend deployment described in the appropriate branch (TLDR; update UI configs and perform s3deploy.bat cdk-userportal-stack-bucketuserportal)
 
 # CloudPRO
 
