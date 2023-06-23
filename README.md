@@ -50,6 +50,12 @@ deploy.bat *
 22) Validate database load; this may take a few minutes for the event to trigger.  Check cdk-dynamodb-stack-dynamoquestionnaire & cdk-dynamodb-stack-scoring
 23) Sync your API key from API gateway to the cloudfront distribution pointing to your api gateway (*.execute-api.*) by editting the origin and then updating DUMMY on x-api-key to the appropriate value.  Save your changes.  For convenience, you can now update your deploy/destroy script with this value.
 24) Your backend is deployed! Proceed to frontend deployment described in the appropriate branch (TLDR; update UI configs and perform s3deploy.bat cdk-userportal-stack-bucketuserportal)
+25) Manually create two cognito users to represent Surgeon 1 & Surgeon 2.  Set email as verified and generate a password.
+26) Add `custom:isEmployee` attribute to both users with a value of `1`
+27) Add both to `surgeons` group
+28) Update the sample JSON on hospitals & surgeon to reference the appropriate user sub id.
+29) Create your entries in hospital and surgeon table
+
 
 # CloudPRO
 
