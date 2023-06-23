@@ -55,7 +55,14 @@ deploy.bat *
 27) Add both to `surgeons` group
 28) Update the sample JSON on hospitals & surgeon to reference the appropriate user sub id.
 29) Create your entries in hospital and surgeon table
-
+30) Force change your two surgeon passwords to a secure random string via aws cli:
+```
+aws cognito-idp admin-set-user-password \
+  --user-pool-id <your-user-pool-id> \
+  --username <username> \
+  --password <password> \
+  --permanent
+```
 
 # CloudPRO
 
