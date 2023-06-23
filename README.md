@@ -63,6 +63,8 @@ aws cognito-idp admin-set-user-password \
   --password <password> \
   --permanent
 ```
+31) Utilize aggs_t & aggs_spec to stage aggregates table
+32) Utilize reporting_sample to stage reporting for a patient user (must update sub)
 
 # CloudPRO
 
