@@ -12,6 +12,7 @@ class ScoringSafety:
             ast.Compare: self.eval_compare,
             ast.IfExp: self.eval_ifexp,
             ast.BinOp: self.eval_binop,
+            ast.UnaryOp: self.eval_unaryop,
             ast.BoolOp: self.eval_boolop,
             ast.Subscript: self.eval_subscript,
             ast.Call: self.eval_call,
@@ -55,6 +56,10 @@ class ScoringSafety:
     def eval_constant(self,node):
         pass       
 
+    # allow unaryop
+    def eval_unaryop(self,node):
+        pass
+    
     # allow binary operators
     def eval_binop(self,node):
         # allow list for accepted binary operators
