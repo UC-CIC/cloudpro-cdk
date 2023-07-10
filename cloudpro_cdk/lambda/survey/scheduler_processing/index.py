@@ -11,7 +11,7 @@ TABLE_SURVEYS_AUDIT=os.environ["TABLE_SURVEY_AUDIT"]
 TABLE_STATE=os.environ["TABLE_STATE"]
 
 
-SURVEYS=["mobility","physical_function","upper_extremity"] 
+SURVEYS=["mobility","physical_function","upper_extremity","upper_extremity_group"] 
 
 
 
@@ -106,6 +106,16 @@ def build_payload(event):
                     "propack": hashlib.sha256( (SURVEYS[2]).encode('utf-8') ).hexdigest(),
                     "name": "Upper Extremity",
                     "description": "Lorem UPPER EXTREMITY ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                    "assigned":assigned,
+                    "due":due,
+                    "completed":False,
+                    "missed":False
+                },
+                {
+                    "sid":hashlib.sha256( (sub+SURVEYS[3]).encode('utf-8') ).hexdigest(),
+                    "propack": hashlib.sha256( (SURVEYS[3]).encode('utf-8') ).hexdigest(),
+                    "name": "Upper Extremity Group",
+                    "description": "Lorem UPPER EXTREMITY GROUP ipsum  dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                     "assigned":assigned,
                     "due":due,
                     "completed":False,

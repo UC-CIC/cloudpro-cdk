@@ -1,0 +1,71 @@
+{
+    "metadata": {
+        "name": "Upper Extremity Group",
+        "description": "Please respond to each question or statement",
+        "version": "1.0",
+        "format":"CPRO_V1"
+    },
+    "questionnaire":[
+		{
+		  "data": {
+			"name": "dyspnea",
+			"description": "",
+			"text": "Over the past 7 days how short of breath did you get with each of these activities?",
+			"questions": [
+			  {
+				"type": "checkbox",
+				"link_id": "PFA14r1",
+				"text": "Are you able to carry a heavy object (over 10 pounds /5 kg)?",
+				"use_values": "default"
+			  },
+			  {
+				"type": "checkbox",
+				"link_id": "PFA16r1",
+				"text": "Are you able to dress yourself, including tying shoelaces and buttoning your clothes?",
+				"use_values": "default"
+			  }
+			],
+			"values": {
+			  "default": [
+				{
+				  "text": "Without any difficulty",
+				  "type": "checkbox",
+				  "value": 5
+				},
+				{
+				  "text": "With a little difficulty",
+				  "type": "checkbox",
+				  "value": 4
+				},
+				{
+				  "text": "With some difficulty",
+				  "type": "checkbox",
+				  "value": 3
+				},
+				{
+				  "text": "With much difficulty",
+				  "type": "checkbox",
+				  "value": 2
+				},
+				{
+				  "text": "Unable to do",
+				  "type": "checkbox",
+				  "value": "1"
+				}
+			  ]
+			}
+		  },
+		  "element": "group"
+		},
+        {
+            "element":"question",
+            "data": {
+                "type":"hidden",
+                "value":0,
+                "text":"t_score",
+                "description":"t_score",
+                "link_id":"t_score"
+            }
+        }
+    ]
+}
