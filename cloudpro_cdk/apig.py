@@ -5,12 +5,13 @@ from aws_cdk import(
     Stack,
     aws_apigateway as apigateway,
     aws_lambda as lambda_,
+    aws_events as events,
     aws_iam as iam,
     Duration
 )
 
 class ApigStack(Stack):
-    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, cfront_user_portal_domain_name, **kwargs) -> None:
+    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, cfront_user_portal_domain_name, ebus_pro:events.EventBus, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
 
@@ -24,7 +25,8 @@ class ApigStack(Stack):
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
         IDENTIFIER_NOTIFICATIONS="custom.lambda.notifications"
-
+        DETAIL_TYPE_REPORTING="Survey Completed"
+        
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
 
         ALLOW_LOCALHOST_ORIGIN=True
@@ -397,7 +399,6 @@ class ApigStack(Stack):
         )
         dynamodb_tables["state"].grant_read_write_data(fn_pro_state_statehash_patch)
 
-
         #################################################################################
         # /state/update [put]
         #################################################################################
@@ -687,12 +688,15 @@ class ApigStack(Stack):
                 "IDENTIFIER":IDENTIFIER_SURVEY,
                 "CORS_ALLOW_UI":FULL_CFRONT_URL,
                 "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "EBUS_PROPACK":ebus_pro.event_bus_name,
+                "DETAIL_TYPE":DETAIL_TYPE_REPORTING
             },
             layers=[ layer_cloudpro_lib ]
         )
         dynamodb_tables["survey"].grant_read_write_data(fn_survey_patch)
         dynamodb_tables["state"].grant_read_data(fn_survey_patch)
         dynamodb_tables["survey_audit"].grant_read_write_data(fn_survey_patch)
+        ebus_pro.grant_put_events_to(fn_survey_patch)
 
          ###### Route Base = /survey
         public_route_survey=api_route.add_resource("survey")

@@ -30,7 +30,7 @@ cfront_userportal_stack=CfrontUserPortal(app, "cdk-cfront-userportal-stack",
     bucket_userportal=user_portal.bucket_userportal
 )
 
-apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables,cfront_user_portal_domain_name=cfront_userportal_stack.cfront_user_portal_domain_name)
+apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables,cfront_user_portal_domain_name=cfront_userportal_stack.cfront_user_portal_domain_name,ebus_pro=event_bus_stack.ebus)
 core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 
 

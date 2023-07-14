@@ -41,9 +41,9 @@ def write_ptreporting( sub, survey, date, score ):
         print(survey)
 
         if found:
-            survey_payload[found_idx][key].append({"date":date,"score":score})
+            survey_payload[found_idx][key].append({"date":date,"score":Decimal(score)})
         else:
-            survey_payload.append( { survey:[{"date":date,"score":score}] })
+            survey_payload.append( { survey:[{"date":date,"score":Decimal(score)}] })
         
         payload = {
             "sub":sub,
@@ -60,7 +60,7 @@ def write_ptreporting( sub, survey, date, score ):
                     survey: [
                         {
                             "date": date,
-                            "score": score
+                            "score": Decimal(score)
                         },
                     ]
                 }
@@ -71,21 +71,21 @@ def write_ptreporting( sub, survey, date, score ):
 
     table = dynamodb.Table(table_name_aggregates)
     search_key = {
-        'agg': "t_score"
+        'agg': "spec"
     }
     result = table.get_item(Key=search_key)
     new_score = 0
     count = 0
     if( 'Item' in result ):
-        new_score = (result["Item"]["value"] + score)/2
-        count = result["Item"]["count"] + 1
+        new_score = (float(result["Item"]["value"])+ float(score))/2
+        count = int(result["Item"]["count"]) + 1
     else:
-        new_score = score
-        count = 1
+        new_score = float(score)
+        count = int(1)
     payload = {
-        "agg":"t_score",
-        "count":count,
-        "value":new_score
+        "agg":"spec",
+        "count":Decimal(count),
+        "value":Decimal(new_score)
     }
     table.put_item ( Item=payload  )
 
