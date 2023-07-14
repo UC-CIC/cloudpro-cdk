@@ -1,2 +1,2 @@
 [t_score]
-formula=cpro_loader['PFA9']
+formula=(10 if cpro_loader['PFA9']=='Without any difficulty' else (8 if cpro_loader['PFA9']=='With a little difficulty' else (3 if cpro_loader['PFA9']=='With much difficulty' else (0 if cpro_loader['PFA9']=='Unable to do' else -1 ))))*(10)
