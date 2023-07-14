@@ -2,8 +2,17 @@ import json
 import boto3
 import os
 from decimal import Decimal
+import datetime
 
 from json_encoder.json_encoder import JSONEncoder
+
+
+event_client = boto3.client('events')
+ebus_propack = os.environ['EBUS_PROPACK']
+SOURCE=os.environ['IDENTIFIER']
+DETAIL_TYPE=os.environ['DETAIL_TYPE']
+
+
 
 dynamodb = boto3.resource('dynamodb')
 table_name=os.environ["TABLE_SURVEY"]
@@ -95,6 +104,43 @@ def sweep_to_complete( sub, db_payload, fields ):
                             state_payload=result["Item"]
                         except:
                             pass
+
+                        t_score = "-1"
+                        try:
+                            t_score=state_payload["states"]["t_score"]["entry_response"]
+                            if( t_score.isdecimal() == False ):
+                                t_score=-1
+                        except:
+                            pass
+                        report_dt_str="1/1/1111"
+
+                        try:
+                            date_str=closed_payload["due"]
+                            date_format="%Y-%m-%dT%H:%M:%S"
+                            date_obj=datetime.datetime.strptime(date_str,date_format)
+                            report_dt_str = date_obj.strftime("%m/%d/%Y")
+                        except:
+                            pass
+
+                        event_for_reporting = {
+                            "sub":sub,
+                            "survey":closed_payload["name"],
+                            "date":report_dt_str,
+                            "t_score":float(t_score)
+                        }
+                        print(event_for_reporting)
+                        eresponse = event_client.put_events(
+                            Entries=[
+                                {
+                                    'Source': "custom.cloudpro.core.survey.complete",
+                                    'DetailType': DETAIL_TYPE,
+                                    'Detail': json.dumps(event_for_reporting),
+                                    'EventBusName':ebus_propack
+                                }
+                            ]
+                        )
+                        print(eresponse)
+
                         audit_payload = {
                             "sid":sid + closed_payload["due"],
                             "state":state_payload,
