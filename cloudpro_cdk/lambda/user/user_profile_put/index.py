@@ -106,7 +106,7 @@ def schedule_surveys( surg_date: str, sub: str ):
         print(result)
         i=i+1
         # for testing only generate one set of survey
-        break
+        # break
     return
 
 

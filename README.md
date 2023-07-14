@@ -46,11 +46,6 @@ deploy.bat cdk-layers-stack
 ```
 deploy.bat *
 ```
-
-Note: If on Linux:
-```
-deploy.bat \*
-```
 19) In AWS console, go to Amazon Simple Email Service (SES) and add the emails you which to utilize on the prototype to verified emails.
 20) Confirm the verification email recieved
 21) Zip up your pro packs of choice (alternatively you can zip the skeleton PROs on staged_propacks\cpro)
@@ -75,6 +70,19 @@ aws cognito-idp admin-set-user-password \
 33) Utilize aggs_t & aggs_spec to stage aggregates table
 34) Utilize reporting_sample to stage reporting for a patient user (must update sub)
  
+# Linux Comments
+Note: If on Linux:
+```
+chmod +x deploy.sh
+./deploy.sh {argument}
+```
+
+Note: To execute an asterisk as your argument
+```
+./deploy.sh \*
+```
+
+
 # CloudPRO
 
 "One click" deploy of CloudPRO.
