@@ -1,61 +1,70 @@
 # Windows Setup Details
-0) Install tar
-1) Install Node 18
-2) Install aws cli
-3) Install python 3.9.13
-4) Make a new directory
-5) Clone cloudpro-cdk repo
-6) CD into directory
-7) create a venv
+1) Install tar
+2) Install Node 18
+3) Install CDK
+`npm install -g aws-cdk`
+4) Install aws cli
+5) Install python 3.9.13
+6) Make a new directory
+7) Clone cloudpro-cdk repo
+8) CD into directory
+9) create a venv
 ```
 python -m venv .venv
 ```
-8) Activate virtual environment
+10) Activate virtual environment
 ```
 source.bat
 ```
-9)  Install requirements
+11)  Install requirements
 ```
 pip install -r requirements.txt
 ```
-10) Set access to your AWS Cloud Account
+12) Set access to your AWS Cloud Account
 ```
 SET AWS_ACCESS_KEY_ID={your_access_key_id}
 SET AWS_SECRET_ACCESS_KEY={your_secret_access_key}
 SET AWS_SESSION_TOKEN={your_session_token}
 ```
-11) Bootstrap CDK
-```
-cdk bootstrap --context layer_arn=DUMMY --context layer_boto_arn=DUMMY  --context XKEY=DUMMY --context debug_token=DUMMY
-```
-12) Build associated python layer deployables
+13) Build associated python layer deployables
 ```
 build_layers.bat
 ```
-13) [Skippable step]; originally, this project required an expiremental version of boto3 (v1.26.86) to support event bridge scheduling; however, at time of release, this was no longer required. This step initially required the manual creation of the boto3 package for layers.  The zip file would be required to be placed in ./cloudpro_cdk/custom_packages/layers/boto_1.26_86.zip.  Layers.py contains the now commented out code that referenced this file.
-14) Update destroy.bat and deploy.bat values for XKEY and debug_token to an alphanumeric 20+ character secure string. XKEY in destroy must match XKEY in deploy; debug_token in destroy must match debug_token in deploy.
-15) As an "initial staging", the lambda layers stack is required to be deployed.
+14) Run `aws configure`
+15) Bootstrap CDK
+```
+cdk bootstrap --context layer_arn=DUMMY --context layer_boto_arn=DUMMY  --context XKEY=DUMMY --context debug_token=DUMMY
+```
+
+16) [Skippable step]; originally, this project required an expiremental version of boto3 (v1.26.86) to support event bridge scheduling; however, at time of release, this was no longer required. This step initially required the manual creation of the boto3 package for layers.  The zip file would be required to be placed in ./cloudpro_cdk/custom_packages/layers/boto_1.26_86.zip.  Layers.py contains the now commented out code that referenced this file.
+17) Update destroy.bat and deploy.bat values for XKEY and debug_token to an alphanumeric 20+ character secure string. XKEY in destroy must match XKEY in deploy; debug_token in destroy must match debug_token in deploy.
+18) As an "initial staging", the lambda layers stack is required to be deployed.
 ```
 deploy.bat cdk-layers-stack
 ```
-16) Deploy the full stack
+18) Deploy the full stack
 ```
 deploy.bat *
 ```
-17) In AWS console, go to Amazon Simple Email Service (SES) and add the emails you which to utilize on the prototype to verified emails.
-18) Confirm the verification email recieved
-19) Zip up your pro packs of choice (alternatively you can zip the skeleton PROs on staged_propacks\cpro)
-20) Create a raw/ folder and drop the zip files in here.  Upload to cdk-propack-stack-bucketpropack
-21) Validate extraction; cdk-propack-stack-bucketpropack will now have a folder called propack
-22) Validate database load; this may take a few minutes for the event to trigger.  Check cdk-dynamodb-stack-dynamoquestionnaire & cdk-dynamodb-stack-scoring
-23) Sync your API key from API gateway to the cloudfront distribution pnting to your api gateway (*.execute-api.*) by editting the origin and then updating DUMMY on x-api-key to the appropriate value.  Save your changes.  For convenience, you can now update your deploy/destroy script with this value.
-24) Your backend is deployed! Proceed to frontend deployment described in the appropriate branch (TLDR; update UI configs and perform s3deploy.bat cdk-userportal-stack-bucketuserportal)
-25) Manually create two cognito users to represent Surgeon 1 & Surgeon 2.  Set email as verified and generate a password.
-26) Add `custom:isEmployee` attribute to both users with a value of `1`
-27) Add both to `surgeons` group
-28) Update the sample JSON on hospitals & surgeon to reference the appropriate user sub id.
-29) Create your entries in hospital and surgeon table
-30) Force change your two surgeon passwords to a secure random string via aws cli:
+
+Note: If on Linux:
+```
+deploy.bat \*
+```
+19) In AWS console, go to Amazon Simple Email Service (SES) and add the emails you which to utilize on the prototype to verified emails.
+20) Confirm the verification email recieved
+21) Zip up your pro packs of choice (alternatively you can zip the skeleton PROs on staged_propacks\cpro)
+22) Create a raw/ folder and drop the zip files in here.  Upload to cdk-propack-stack-bucketpropack
+23) Validate extraction; cdk-propack-stack-bucketpropack will now have a folder called propack
+24) Validate database load; this may take a few minutes for the event to trigger.  Check cdk-dynamodb-stack-dynamoquestionnaire & cdk-dynamodb-stack-scoring
+25) Sync your API key from API gateway to the cloudfront distribution pnting to your api gateway (*.execute-api.*) by editting the origin and then updating DUMMY on x-api-key to the appropriate value.  Save your changes.  For convenience, you can now update your deploy/destroy script with this value.
+26) Your backend is deployed! Proceed to frontend deployment described in the appropriate branch (TLDR; update UI configs and perform s3deploy.bat cdk-userportal-stack-bucketuserportal)
+27) Manually create two cognito users to represent Surgeon 1 & Surgeon 2.  Set email as verified and generate a password.
+28) Add `custom:isEmployee` attribute to both users with a value of `1`
+29) Add both to `surgeons` group
+30) Update the sample JSON on hospitals & surgeon to reference the appropriate user sub id.
+31) Create your entries in hospital and surgeon table
+32) Force change your two surgeon passwords to a secure random string via aws cli:
 ```
 aws cognito-idp admin-set-user-password \
   --user-pool-id <your-user-pool-id> \
@@ -63,8 +72,8 @@ aws cognito-idp admin-set-user-password \
   --password <password> \
   --permanent
 ```
-31) Utilize aggs_t & aggs_spec to stage aggregates table
-32) Utilize reporting_sample to stage reporting for a patient user (must update sub)
+33) Utilize aggs_t & aggs_spec to stage aggregates table
+34) Utilize reporting_sample to stage reporting for a patient user (must update sub)
  
 # CloudPRO
 
