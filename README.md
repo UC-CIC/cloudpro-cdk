@@ -46,18 +46,19 @@ deploy.bat cdk-layers-stack
 ```
 deploy.bat *
 ```
-19) In AWS console, go to Amazon Simple Email Service (SES) and add the emails you which to utilize on the prototype to verified emails.
+19) In AWS console, go to Amazon Simple Email Service (SES) and add the emails you which to utilize on the prototype to verified emails. 
+https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html
 20) Confirm the verification email recieved
-21) Zip up your pro packs of choice (alternatively you can zip the skeleton PROs on staged_propacks\cpro)
-22) Create a raw/ folder and drop the zip files in here.  Upload to cdk-propack-stack-bucketpropack
+21) Zip up your pro packs of choice (alternatively you can zip the skeleton PROs on staged_propacks\cpro). Each propack should be it's own individual zip
+22) Navigate to S3 on AWS console and create a raw/ folder within the bucket. Drop the zip files in here.  Upload to cdk-propack-stack-bucketpropack  (note there will be a randomly generated suffix to the bucket name)
 23) Validate extraction; cdk-propack-stack-bucketpropack will now have a folder called propack
-24) Validate database load; this may take a few minutes for the event to trigger.  Check cdk-dynamodb-stack-dynamoquestionnaire & cdk-dynamodb-stack-scoring
-25) Sync your API key from API gateway to the cloudfront distribution pnting to your api gateway (*.execute-api.*) by editting the origin and then updating DUMMY on x-api-key to the appropriate value.  Save your changes.  For convenience, you can now update your deploy/destroy script with this value.
+24) Validate database load by navigating to DynamoDB on AWS Console. This may take a few minutes for the event to trigger.  Check cdk-dynamo-stack-dynamoquestionnaire & cdk-dynamo-stack-scoring tables.  (note there will be a randomly generated suffix to the table name)
+25) Sync your API key from API gateway to the cloudfront distribution pointing to your api gateway (*.execute-api.*) by editting the origin and then updating DUMMY on x-api-key to the appropriate value.  Save your changes.  For convenience, you can now update your deploy/destroy script with this value.
 26) Your backend is deployed! Proceed to frontend deployment described in the appropriate branch (TLDR; update UI configs and perform s3deploy.bat cdk-userportal-stack-bucketuserportal)
 27) Manually create two cognito users to represent Surgeon 1 & Surgeon 2.  Set email as verified and generate a password.
 28) Add `custom:isEmployee` attribute to both users with a value of `1`
 29) Add both to `surgeons` group
-30) Update the sample JSON on hospitals & surgeon to reference the appropriate user sub id.
+30) Update the sample JSON on hospitals & surgeon to reference the appropriate user sub id (staged_db_content\staging_hospitals.xlsx & staging_surgeons.xlsx)
 31) Create your entries in hospital and surgeon table
 32) Force change your two surgeon passwords to a secure random string via aws cli:
 ```
@@ -67,7 +68,7 @@ aws cognito-idp admin-set-user-password \
   --password <password> \
   --permanent
 ```
-33) Utilize aggs_t & aggs_spec to stage aggregates table
+33) Navigate to dynamodb and access the dynamoaggs table. Utilize aggs_t & aggs_spec json ((staged_db_content\staging_reporting.xlsx) to stage aggregates table (create the two items)
 34) Utilize reporting_sample to stage reporting for a patient user (must update sub)
  
 # Linux Comments
