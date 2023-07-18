@@ -59,10 +59,10 @@ def build_payload(event):
                         'state_hash': sid
                     }
                     print("state-search:",search_key)
-                    result = table_state.get_item(Key=search_key)
+                    result_state = table_state.get_item(Key=search_key)
                     state_payload={}
                     try:
-                        state_payload=result["Item"]
+                        state_payload=result_state["Item"]
                     except:
                         pass
 
