@@ -25,6 +25,7 @@ class ApigStack(Stack):
         IDENTIFIER_AUTHORIZER="custom.lambda.authorizer.core"
         IDENTIFIER_AUTHORIZER_DEBUG="custom.lambda.authorizer.debug"
         IDENTIFIER_NOTIFICATIONS="custom.lambda.notifications"
+        IDENTIFIER_QOL="custom.lambda.qol"
         DETAIL_TYPE_REPORTING="Survey Completed"
         
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
@@ -554,7 +555,7 @@ class ApigStack(Stack):
         # the scheduling mechanics so we can separate duties
         profrole.attach_inline_policy(iam.Policy(self, "scheduler-policy",
             statements=[iam.PolicyStatement(
-                actions=["scheduler:CreateSchedule"],
+                actions=["scheduler:CreateSchedule","scheduler:GetSchedule","scheduler:UpdateSchedule"],
                 resources=["*"]
             )             
             ]
@@ -1017,6 +1018,39 @@ class ApigStack(Stack):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+
+        fn_qol_simulate_schedule = lambda_.Function(
+            self,"fn-qol-simulate-schedule-post",
+            description="qol_simulate_schedule-post", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/qol","simulate_schedule")),
+            role=profrole,
+            environment={
+                "IDENTIFIER":IDENTIFIER_QOL,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn,
+                "SCHEDULER_PROCESSING_ROLE": fn_scheduler_processing.role.role_arn
+            },
+            #layers=[ layer_cloudpro_lib,layer_boto_lib ]
+            layers=[layer_cloudpro_lib]
+        )
+         ###### Route Base = /qol
+        public_route_qol=api_route.add_resource("qol")
+        
+        # /qol/simulate/
+        public_route_simulate=public_route_qol.add_resource("simulatesched")
+        # /qol/simulate/rollover
+        public_route_simulate_rollover=public_route_simulate.add_resource("rollover")
+        # POST:# /qol/simulate/rollover
+        simulate_rollover_post_integration=apigateway.LambdaIntegration(fn_qol_simulate_schedule)
+        method_simulate_rollover_post=public_route_simulate_rollover.add_method(
+            "POST",simulate_rollover_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
 
         #################################################################################
