@@ -1037,7 +1037,20 @@ class ApigStack(Stack):
             #layers=[ layer_cloudpro_lib,layer_boto_lib ]
             layers=[layer_cloudpro_lib]
         )
-
+         ###### Route Base = /qol
+        public_route_qol=api_route.add_resource("qol")
+        
+        # /qol/simulate/
+        public_route_simulate=public_route_qol.add_resource("simulatesched")
+        # /qol/simulate/rollover
+        public_route_simulate_rollover=public_route_simulate.add_resource("rollover")
+        # POST:# /qol/simulate/rollover
+        simulate_rollover_post_integration=apigateway.LambdaIntegration(fn_qol_simulate_schedule)
+        method_simulate_rollover_post=public_route_simulate_rollover.add_method(
+            "POST",simulate_rollover_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
 
         #################################################################################

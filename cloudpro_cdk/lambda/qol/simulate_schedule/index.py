@@ -19,6 +19,7 @@ CORS_HEADERS = {
 }
 
 def handler(event,context):
+    print(event)
     field_values=json.loads(event["body"])
     schedule_name=field_values["name"]
 
