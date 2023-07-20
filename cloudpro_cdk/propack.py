@@ -33,6 +33,14 @@ class ProPack(Stack):
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             event_bridge_enabled=True
         )
+        # pair down for production
+        bucket_propack.add_cors_rule(
+            allowed_methods=[s3.HttpMethods.GET,s3.HttpMethods.POST],
+            allowed_origins=["*"],
+            allowed_headers=["*"],
+            exposed_headers=[],
+            max_age=3000
+        )
  
         fn_propack_extractor = lambda_.Function(
             self,"fn-propack-extractor",
@@ -178,3 +186,5 @@ class ProPack(Stack):
             )
         )
         ##########################################################################################################
+
+        self.bucket_propack = bucket_propack
