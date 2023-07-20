@@ -3,6 +3,7 @@ import os
 import logging
 import boto3
 from botocore.exceptions import ClientError
+from json_encoder.json_encoder import JSONEncoder
 
 CORS_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',

@@ -3,6 +3,7 @@ import os
 from constructs import Construct
 from aws_cdk import(
     Stack,
+    aws_s3 as s3,
     aws_apigateway as apigateway,
     aws_lambda as lambda_,
     aws_events as events,
@@ -11,7 +12,7 @@ from aws_cdk import(
 )
 
 class ApigStack(Stack):
-    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, cfront_user_portal_domain_name, ebus_pro:events.EventBus, **kwargs) -> None:
+    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, cfront_user_portal_domain_name, ebus_pro:events.EventBus, bucket_propack,**kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
 
@@ -580,7 +581,20 @@ class ApigStack(Stack):
             )             
             ]
         ))
-
+        profrole.attach_inline_policy(iam.Policy(self, "s3-functionality-list",
+            statements=[iam.PolicyStatement(
+                actions=["s3:ListObjectsInBucket"],
+                resources=[bucket_propack.bucket_arn]
+            )             
+            ]
+        ))
+        profrole.attach_inline_policy(iam.Policy(self, "s3-functionality-put",
+            statements=[iam.PolicyStatement(
+                actions=["s3:PutObject"],
+                resources=[bucket_propack.bucket_arn+"/*"]
+            )             
+            ]
+        ))
 
 
         #"SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn
@@ -1030,7 +1044,7 @@ class ApigStack(Stack):
                 "IDENTIFIER":IDENTIFIER_QOL,
                 "CORS_ALLOW_UI":FULL_CFRONT_URL,
                 "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
-                "BUCKET_PROPACK_NAME":""
+                "BUCKET_PROPACK_NAME":bucket_propack.bucket_name
             },
             #layers=[ layer_cloudpro_lib,layer_boto_lib ]
             layers=[layer_cloudpro_lib]
@@ -1068,7 +1082,15 @@ class ApigStack(Stack):
             authorizer=auth,
             api_key_required=True
         )
-
+        # /qol/uploader/
+        public_route_uploader=public_route_qol.add_resource("uploader")
+        # GET:# /qol/uploader
+        uploader_post_integration=apigateway.LambdaIntegration(fn_qol_simulate_proupload)
+        method_uploader_post=public_route_uploader.add_method(
+            "POST",uploader_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
         #################################################################################
         # Usage plan and api key to "lock" API to only CFRONT calls
