@@ -1019,6 +1019,23 @@ class ApigStack(Stack):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
+        fn_qol_simulate_proupload = lambda_.Function(
+            self,"fn-qol-simulate-proupload-get",
+            description="qol_simulate_prupload-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/qol","uploader")),
+            role=profrole,
+            environment={
+                "IDENTIFIER":IDENTIFIER_QOL,
+                "CORS_ALLOW_UI":FULL_CFRONT_URL,
+                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "BUCKET_PROPACK_NAME":""
+            },
+            #layers=[ layer_cloudpro_lib,layer_boto_lib ]
+            layers=[layer_cloudpro_lib]
+        )
+
 
         fn_qol_simulate_schedule = lambda_.Function(
             self,"fn-qol-simulate-schedule-post",
