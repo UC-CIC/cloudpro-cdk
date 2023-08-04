@@ -13,9 +13,6 @@ CORS_HEADERS = {
 
 bucket_name=os.environ["BUCKET_PROPACK_NAME"]
 
-#short circuit for testing
-bucket_name="cdk-propack-stack-bucketpropack5dd3828c-uemyj1eyoq46"
-
 def create_presigned_url( object_name, expiration=3600):
     """Generate a presigned URL to share an S3 object
 
