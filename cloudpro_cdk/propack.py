@@ -26,7 +26,7 @@ class ProPack(Stack):
         
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
         
-        bucket_propack=s3.Bucket(self, "bucket-propack",
+        bucket_propack=s3.Bucket(self, "bucket-propack-dev",
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
@@ -43,8 +43,8 @@ class ProPack(Stack):
         )
  
         fn_propack_extractor = lambda_.Function(
-            self,"fn-propack-extractor",
-            description="propack-extractor", #microservice tag
+            self,"fn-propack-extractor-dev",
+            description="propack-extractor-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/","pro_extractor")),
@@ -62,9 +62,9 @@ class ProPack(Stack):
         # Default Bus: New S3 Object with prefix raw/ for PRO Pack
         ##############################################################################
         # DLQ for DFLT FWD Rule
-        sqs_dflt_propack_dlq = sqs.Queue(self, "sqs-dflt-propack-dlq")
+        sqs_dflt_propack_dlq = sqs.Queue(self, "sqs-dflt-propack-dlq-dev")
         # Rule filter to match object created in PRO Pack S3
-        rule_dflt_fwd_propack_newe = events.Rule(self, "rule-dflt-fwd-propack-new",
+        rule_dflt_fwd_propack_newe = events.Rule(self, "rule-dflt-fwd-propack-new-dev",
             description="Rule to forward from default bus.",
             event_pattern=events.EventPattern(
                 source=["aws.s3"],
@@ -92,9 +92,9 @@ class ProPack(Stack):
         # Core Bus: Object has been created for PRO Pack
         ##############################################################################
         # DLQ for PRO Creation
-        sqs_propack_dlq = sqs.Queue(self, "sqs-propack-dlq")
+        sqs_propack_dlq = sqs.Queue(self, "sqs-propack-dlq-dev")
         # s3.EventType.OBJECT_CREATED
-        rule_propack_new = events.Rule(self, "rule-propack-new",
+        rule_propack_new = events.Rule(self, "rule-propack-new-dev",
             description="Rule for when new PRO packs are uploaded to S3.",
             event_pattern=events.EventPattern(
                 source=["aws.s3"],
@@ -115,8 +115,8 @@ class ProPack(Stack):
         ##########################################################################################################
 
         fn_pro_question_loader = lambda_.Function(
-            self,"fn-pro-question-loader",
-            description="pro-question-loader", #microservice tag
+            self,"fn-pro-question-loader-dev",
+            description="pro-question-loader-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_question","pro_question_loader")),
@@ -128,8 +128,8 @@ class ProPack(Stack):
             }
         )
         fn_pro_scoring_loader = lambda_.Function(
-            self,"fn-pro-scoring-loader",
-            description="pro-scoring-loader", #microservice tag
+            self,"fn-pro-scoring-loader-dev",
+            description="pro-scoring-loader-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_scoring","pro_scoring_loader")),
@@ -153,9 +153,9 @@ class ProPack(Stack):
         #  Core Bus: Extraction event
         ##############################################################################
         # DLQ for PRO Loading
-        sqs_propack_load_dlq = sqs.Queue(self, "sqs-propack-load-dlq")
+        sqs_propack_load_dlq = sqs.Queue(self, "sqs-propack-load-dlq-dev")
         # s3.EventType.OBJECT_CREATED
-        rule_propack_load = events.Rule(self, "cdk-rule-propack-load",
+        rule_propack_load = events.Rule(self, "cdk-rule-propack-load-dev",
             description="Rule for when new PRO packs complete extraction.",
             event_pattern=events.EventPattern(
                 source=[SOURCE_PROPACK_EXTRACTOR],

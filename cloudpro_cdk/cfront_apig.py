@@ -18,8 +18,8 @@ class CfrontApig(Stack):
         # Creating a custom cache policy for a Distribution -- all parameters optional
         # bucket_origin: origins.S3Origin
 
-        api_cache_policy = cloudfront.CachePolicy(self, "cpol-apig",
-            cache_policy_name="apig",
+        api_cache_policy = cloudfront.CachePolicy(self, "cpol-apig-dev",
+            cache_policy_name="apig-dev",
             comment="Default cache policy for API Gateway",
             default_ttl=Duration.seconds(0),
             min_ttl=Duration.seconds(0),
@@ -34,7 +34,7 @@ class CfrontApig(Stack):
 
         api_cdn = cloudfront.Distribution(
             self,
-            "cfront-cloudpro-api",
+            "cfront-cloudpro-api-dev",
             default_behavior=cloudfront.BehaviorOptions(
                 origin=origins.RestApiOrigin(
                     core_api,

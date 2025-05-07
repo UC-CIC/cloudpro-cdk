@@ -17,7 +17,7 @@ table_name=os.environ["TABLE_SCORING"]
 
 CORS_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Origin': os.environ["CORS_ALLOW_UI"] if os.environ["LOCALHOST_ORIGIN"] == "" else os.environ["LOCALHOST_ORIGIN"],
+    'Access-Control-Allow-Origin': os.environ["CORS_ALLOWED_ORIGIN"],
     'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
 }
 

@@ -12,7 +12,7 @@ from json_encoder.json_encoder import JSONEncoder
 dynamodb = boto3.resource('dynamodb')
 scheduler = boto3.client('scheduler')
 
-
+surgeon_table_name=os.environ["TABLE_SURGEON"]
 table_name=os.environ["TABLE_USER"]
 target_arn=os.environ["SCHEDULER_PROCESSING_ARN"]
 target_role=os.environ["SCHEDULER_PROCESSING_ROLE"]
@@ -20,7 +20,7 @@ target_role=os.environ["SCHEDULER_PROCESSING_ROLE"]
 
 CORS_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Origin': os.environ["CORS_ALLOW_UI"] if os.environ["LOCALHOST_ORIGIN"] == "" else os.environ["LOCALHOST_ORIGIN"],
+    'Access-Control-Allow-Origin': os.environ["CORS_ALLOWED_ORIGIN"],
     'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT'
 }
 
@@ -129,6 +129,11 @@ def update_profile( field_values:json ):
     
     return table.put_item ( Item=field_values  )
 
+def add_patient_to_surgeon( patient: str, surgeon: str ):
+    table = dynamodb.Table(surgeon_table_name)
+    item = table.get_item(Key={'sub': surgeon}).get('Item',{})
+    item.get('pts', []).append(patient)
+    table.put_item(Item=item)
 
 def handler(event,context):
     print(boto3.__version__)
@@ -143,6 +148,9 @@ def handler(event,context):
         print("Read Surg Date: ", surg_date)
         print("Read Sub: ", sub)
         schedule_surveys(surg_date,sub)
+
+        surgeon = field_values["profile"]["surgeon"].split(';')[0]
+        add_patient_to_surgeon(sub, surgeon)
         
         return {
             "statusCode":200,

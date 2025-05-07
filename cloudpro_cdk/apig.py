@@ -10,9 +10,10 @@ from aws_cdk import(
     aws_iam as iam,
     Duration
 )
+import json
 
 class ApigStack(Stack):
-    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, cfront_user_portal_domain_name, ebus_pro:events.EventBus, bucket_propack,**kwargs) -> None:
+    def __init__(self,scope: Construct, construct_id: str,  dynamodb_tables:dict, cfront_user_portal_domain_name, ebus_pro:events.EventBus, cognito_userpool, bucket_propack,**kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
 
@@ -30,10 +31,14 @@ class ApigStack(Stack):
         DETAIL_TYPE_REPORTING="Survey Completed"
         
         FULL_CFRONT_URL="https://"+cfront_user_portal_domain_name
-
-        ALLOW_LOCALHOST_ORIGIN=True
         LOCALHOST_ORIGIN="http://localhost:3000"
 
+        # Allow all origins if env=dev
+        env = self.node.try_get_context("env")
+        if env == "dev":
+            CORS_ALLOWED_ORIGIN = "*"
+        else: 
+            CORS_ALLOWED_ORIGIN = FULL_CFRONT_URL
 
         layer_cloudpro_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_cloudpro_lib",layer_version_arn=self.node.try_get_context("layer_arn"))
         #layer_boto_lib = lambda_.LayerVersion.from_layer_version_arn(self,id="layer_boto_lib",layer_version_arn=self.node.try_get_context("layer_boto_arn"))
@@ -41,28 +46,26 @@ class ApigStack(Stack):
 
         
         fn_authorizer_core = lambda_.Function(
-            self,"fn-authorizer-core",
-            description="authorizer-core", #microservice tag
+            self,"fn-authorizer-core-dev",
+            description="authorizer-core-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/apig","authorizer_core")),
             environment={
                 "IDENTIFIER":IDENTIFIER_AUTHORIZER,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else ""
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN
             },
             layers=[ layer_cloudpro_lib ]
         )
         fn_authorizer_debug = lambda_.Function(
-            self,"fn-authorizer-debug",
-            description="authorizer-debug", #microservice tag
+            self,"fn-authorizer-debug-dev",
+            description="authorizer-debug-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/apig","authorizer_debug")),
             environment={
                 "IDENTIFIER":IDENTIFIER_AUTHORIZER_DEBUG,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
                 "DEBUG_TOKEN":self.node.try_get_context("debug_token")
             },
             layers=[ layer_cloudpro_lib ]
@@ -95,9 +98,9 @@ class ApigStack(Stack):
             ),
             default_cors_preflight_options=apigateway.CorsOptions(
                 allow_methods=['GET', 'OPTIONS','PUT','PATCH','POST'],
-                allow_origins=[FULL_CFRONT_URL, LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else ""])
+                allow_origins=[FULL_CFRONT_URL, LOCALHOST_ORIGIN if env=="dev" else ""])
         )
- 
+
     
         
 
@@ -139,8 +142,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -159,8 +161,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -181,8 +182,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_QUESTION,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -242,8 +242,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_SCORING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -262,8 +261,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_SCORING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -281,8 +279,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_SCORING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -303,8 +300,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SCORING":dynamodb_tables["scoring"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_SCORING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -375,8 +371,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -394,8 +389,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -413,8 +407,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -434,8 +427,7 @@ class ApigStack(Stack):
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "TABLE_QUESTIONNAIRE":dynamodb_tables["questionnaire"].table_name,
                 "IDENTIFIER":IDENTIFIER_PRO_STATE,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -596,6 +588,20 @@ class ApigStack(Stack):
             ]
         ))
 
+        # create a role for mfa lambdas
+        lambdarole = iam.Role(self, "lambda-role",
+          assumed_by=iam.CompositePrincipal(
+            iam.ServicePrincipal("lambda.amazonaws.com"),
+            )
+        )
+
+        lambdarole.attach_inline_policy(iam.Policy(self, "dynamodb",
+            statements=[iam.PolicyStatement(
+                actions=["dynamodb:*", "cognito-idp:*", "sns:*"],
+                resources=["*"]
+            )             
+            ]
+        ))
 
         #"SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn
         #################################################################################
@@ -610,8 +616,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_USER":dynamodb_tables["user"].table_name,
                 "IDENTIFIER":IDENTIFIER_USER,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -629,9 +634,9 @@ class ApigStack(Stack):
             role=profrole,
             environment={
                 "TABLE_USER":dynamodb_tables["user"].table_name,
+                "TABLE_SURGEON":dynamodb_tables["surgeons"].table_name,
                 "IDENTIFIER":IDENTIFIER_USER,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
                 "SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn,
                 "SCHEDULER_PROCESSING_ROLE": fn_scheduler_processing.role.role_arn
             },
@@ -639,11 +644,9 @@ class ApigStack(Stack):
             layers=[layer_cloudpro_lib]
         )
 
-
-        
-
         #this access flows to our scheduler too
         dynamodb_tables["user"].grant_read_write_data(fn_user_profile_put)
+        dynamodb_tables["surgeons"].grant_read_write_data(fn_user_profile_put)
 
         ###### Route Base = /user
         public_route_user=api_route.add_resource("user")
@@ -683,8 +686,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
                 "IDENTIFIER":IDENTIFIER_SURVEY,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -701,8 +703,7 @@ class ApigStack(Stack):
                 "TABLE_AUDIT":dynamodb_tables["survey_audit"].table_name,
                 "TABLE_STATE":dynamodb_tables["state"].table_name,
                 "IDENTIFIER":IDENTIFIER_SURVEY,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
                 "EBUS_PROPACK":ebus_pro.event_bus_name,
                 "DETAIL_TYPE":DETAIL_TYPE_REPORTING
             },
@@ -751,8 +752,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_AUDIT":dynamodb_tables["survey_audit"].table_name,
                 "IDENTIFIER":IDENTIFIER_SURVEY,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -793,8 +793,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_AGGREGATES":dynamodb_tables["aggregates"].table_name,
                 "IDENTIFIER":IDENTIFIER_AGGREGATES,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -826,8 +825,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_PTREPORTING":dynamodb_tables["pt_reporting"].table_name,
                 "IDENTIFIER":IDENTIFIER_PTREPORTING,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -860,8 +858,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_NOTIFICATIONS":dynamodb_tables["notifications"].table_name,
                 "IDENTIFIER":IDENTIFIER_NOTIFICATIONS,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -893,8 +890,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
                 "IDENTIFIER":"BD_SURGEONS_INIT",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -909,8 +905,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
                 "IDENTIFIER":"SURGEONS_LIST",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -940,6 +935,175 @@ class ApigStack(Stack):
             api_key_required=True
         )
 
+        fn_surgeon_get = lambda_.Function(
+            self,"fn-surgeon-get",
+            description="surgeon-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/surgeon","surgeon_get")),
+            environment={
+                "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
+                "TABLE_USER":dynamodb_tables["user"].table_name,
+                "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["surgeons"].grant_read_data(fn_surgeon_get)
+        dynamodb_tables["user"].grant_read_data(fn_surgeon_get)
+        dynamodb_tables["survey"].grant_read_data(fn_surgeon_get)
+
+        fn_patient_details_get = lambda_.Function(
+            self,"fn-patient-details-get",
+            description="patient-details-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/surgeon","patient_details_get")),
+            environment={
+                "TABLE_USER":dynamodb_tables["user"].table_name,
+                "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
+                "TABLE_REPORTING":dynamodb_tables["pt_reporting"].table_name,
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["user"].grant_read_data(fn_patient_details_get)
+        dynamodb_tables["survey"].grant_read_data(fn_patient_details_get)
+        dynamodb_tables["pt_reporting"].grant_read_data(fn_patient_details_get)
+
+        fn_all_patient_details_get = lambda_.Function(
+            self,"fn-all-patient-details-get",
+            description="all-patient-details-get", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/surgeon","all_patient_details_get")),
+            environment={
+                "TABLE_USER":dynamodb_tables["user"].table_name,
+                "TABLE_SURVEY":dynamodb_tables["survey"].table_name,
+                "TABLE_REPORTING":dynamodb_tables["pt_reporting"].table_name,
+                "TABLE_SURGEONS":dynamodb_tables["surgeons"].table_name,
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["user"].grant_read_data(fn_all_patient_details_get)
+        dynamodb_tables["survey"].grant_read_data(fn_all_patient_details_get)
+        dynamodb_tables["pt_reporting"].grant_read_data(fn_all_patient_details_get)
+        dynamodb_tables["surgeons"].grant_read_data(fn_all_patient_details_get)
+        
+        # /surgeon/{sub}
+        public_route_surgeon_init=public_route_surgeon.add_resource("{sub}")
+        # GET:/surgeon/{sub}
+        surgeon_init_get_integration=apigateway.LambdaIntegration(fn_surgeon_get)
+        method_patient_list=public_route_surgeon_init.add_method(
+            "GET",surgeon_init_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+        # /surgeon/patient-details/{sub}
+        public_route_surgeon_init=public_route_surgeon.add_resource("patient-details")
+        public_route_patient_details_init=public_route_surgeon_init.add_resource("{sub}")
+        # GET:/surgeon/patient-details/{sub}
+        surgeon_init_get_integration=apigateway.LambdaIntegration(fn_patient_details_get)
+        method_patient_details=public_route_patient_details_init.add_method(
+            "GET",surgeon_init_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+        # /surgeon/all-patient-details/{sub}
+        public_route_surgeon_init=public_route_surgeon.add_resource("all-patient-details")
+        public_route_all_patient_details_init=public_route_surgeon_init.add_resource("{sub}")
+        # GET:/surgeon/patient-details/{sub}
+        surgeon_init_get_integration=apigateway.LambdaIntegration(fn_all_patient_details_get)
+        method_all_patient_details=public_route_all_patient_details_init.add_method(
+            "GET",surgeon_init_get_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+        #################################################################################
+        # /mfa/
+        #################################################################################
+
+        fn_set_mfa_preference = lambda_.Function(
+            self,"fn-mfa-set-preference",
+            description="mfa-set-preference", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/mfa","set_mfa_preference")),
+            role=lambdarole,
+            environment={
+                "USERPOOL_ID":cognito_userpool.user_pool_id,
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+
+        fn_verify_otp = lambda_.Function(
+            self,"fn-mfa-verify-otp",
+            description="mfa-verify-otp", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/mfa","verify_otp")),
+            role=lambdarole,
+            environment={
+                "TABLE_OTP":dynamodb_tables["otp_staged"].table_name,
+                "USERPOOL_ID":cognito_userpool.user_pool_id,
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["otp_staged"].grant_read_write_data(fn_verify_otp)
+
+        fn_send_otp = lambda_.Function(
+            self,"fn-mfa-send-otp",
+            description="mfa-send-otp", #microservice tag
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            handler="index.handler",
+            code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/mfa","send_otp")),
+            role=lambdarole,
+            environment={
+                "TABLE_OTP":dynamodb_tables["otp_staged"].table_name,
+                "ENV":env,
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
+            },
+            layers=[ layer_cloudpro_lib ]
+        )
+        dynamodb_tables["otp_staged"].grant_read_write_data(fn_send_otp)
+
+        ###### Route Base = /mfa
+        public_route_mfa=api_route.add_resource("mfa")
+        
+        # /mfa/set-preference
+        public_mfa_set_preference=public_route_mfa.add_resource("set-preference")
+        # POST:/mfa/set-preference
+        mfa_set_preference_post_integration=apigateway.LambdaIntegration(fn_set_mfa_preference)
+        method_mfa_set_preference=public_mfa_set_preference.add_method(
+            "POST",mfa_set_preference_post_integration,
+            api_key_required=True
+        )
+
+        # /mfa/{phone}
+        public_mfa_send_otp=public_route_mfa.add_resource("{phone}")
+        # GET:/mfa/{phone}
+        mfa_send_otp_post_integration=apigateway.LambdaIntegration(fn_send_otp)
+        method_mfa_set_preference=public_mfa_send_otp.add_method(
+            "GET",mfa_send_otp_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
+
+        # /mfa/verify
+        public_mfa_verify_otp=public_route_mfa.add_resource("verify")
+        # POST:/mfa/verify
+        mfa_set_preference_post_integration=apigateway.LambdaIntegration(fn_verify_otp)
+        method_mfa_verify_otp=public_mfa_verify_otp.add_method(
+            "POST",mfa_set_preference_post_integration,
+            authorizer=auth,
+            api_key_required=True
+        )
 
         #################################################################################
         # /hospital/
@@ -953,8 +1117,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
                 "IDENTIFIER":"BD_HOSPITALS_INIT",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -969,8 +1132,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
                 "IDENTIFIER":"HOSPITALS_LIST",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -985,8 +1147,7 @@ class ApigStack(Stack):
             environment={
                 "TABLE_HOSPITALS":dynamodb_tables["hospitals"].table_name,
                 "IDENTIFIER":"HOSPITALS_LIST",
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
             },
             layers=[ layer_cloudpro_lib ]
         )
@@ -1042,8 +1203,7 @@ class ApigStack(Stack):
             role=profrole,
             environment={
                 "IDENTIFIER":IDENTIFIER_QOL,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
                 "BUCKET_PROPACK_NAME":bucket_propack.bucket_name
             },
             #layers=[ layer_cloudpro_lib,layer_boto_lib ]
@@ -1060,8 +1220,7 @@ class ApigStack(Stack):
             role=profrole,
             environment={
                 "IDENTIFIER":IDENTIFIER_QOL,
-                "CORS_ALLOW_UI":FULL_CFRONT_URL,
-                "LOCALHOST_ORIGIN":LOCALHOST_ORIGIN if ALLOW_LOCALHOST_ORIGIN else "",
+                "CORS_ALLOWED_ORIGIN":CORS_ALLOWED_ORIGIN,
                 "SCHEDULER_PROCESSING_ARN": fn_scheduler_processing.function_arn,
                 "SCHEDULER_PROCESSING_ROLE": fn_scheduler_processing.role.role_arn
             },

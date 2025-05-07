@@ -17,29 +17,27 @@ from cloudpro_cdk.cognito import CognitoStack
 
 app = cdk.App()
 
-LayersStack(app, "cdk-layers-stack")
-dynamodb_stack = DynamodbStack(app, "cdk-dynamodb-stack")
+LayersStack(app, "cdk-layers-stack-dev-dev")
+dynamodb_stack = DynamodbStack(app, "cdk-dynamodb-stack-dev")
 
 
 
-event_bus_stack=EventBus(app, "cdk-event-bus-stack")
-propack_loader=ProPack(app, "cdk-propack-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
+event_bus_stack=EventBus(app, "cdk-event-bus-stack-dev")
+propack_loader=ProPack(app, "cdk-propack-stack-dev",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 
-user_portal=UserPortal(app, "cdk-userportal-stack")
-cfront_userportal_stack=CfrontUserPortal(app, "cdk-cfront-userportal-stack", 
+user_portal=UserPortal(app, "cdk-userportal-stack-dev")
+cfront_userportal_stack=CfrontUserPortal(app, "cdk-cfront-userportal-stack-dev", 
     bucket_userportal=user_portal.bucket_userportal
 )
 
-apig_stack=ApigStack(app,"cdk-apig-stack",dynamodb_tables=dynamodb_stack.tables,cfront_user_portal_domain_name=cfront_userportal_stack.cfront_user_portal_domain_name,ebus_pro=event_bus_stack.ebus,bucket_propack=propack_loader.bucket_propack)
-core_events=CoreEvents(app, "cdk-core-events-stack",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
+core_events=CoreEvents(app, "cdk-core-events-stack-dev",ebus_pro=event_bus_stack.ebus,dynamodb_tables=dynamodb_stack.tables)
 
+cognito_stack=CognitoStack(app, "cdk-cognito-stack-dev", dynamodb_user_table=dynamodb_stack.tables["user"],dynamodb_user_staged_table=dynamodb_stack.tables["user_staged"])
 
-cfront_apig_stack=CfrontApig(app, "cdk-cfront-apig-stack",
+apig_stack=ApigStack(app,"cdk-apig-stack-dev",dynamodb_tables=dynamodb_stack.tables,cfront_user_portal_domain_name=cfront_userportal_stack.cfront_user_portal_domain_name,ebus_pro=event_bus_stack.ebus,bucket_propack=propack_loader.bucket_propack, cognito_userpool=cognito_stack.cognito_userpool)
+cfront_apig_stack=CfrontApig(app, "cdk-cfront-apig-stack-dev",
     core_api=apig_stack.core_api
 )
-
-cognito_stack=CognitoStack(app, "cdk-cognito-stack", dynamodb_user_table=dynamodb_stack.tables["user"],dynamodb_user_staged_table=dynamodb_stack.tables["user_staged"])
-
 
 app.synth()
 
