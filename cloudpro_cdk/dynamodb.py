@@ -61,6 +61,11 @@ class DynamodbStack(Stack):
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
         )
 
+        dynamo_otp_staged = dynamodb.Table(self,"dynamo-otp-staged",
+            partition_key=dynamodb.Attribute(name="phone", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+        )
+
         self.tables = {
             "questionnaire" : dynamo_questionnaire,
             "scoring" : dynamo_scoring,
@@ -73,6 +78,7 @@ class DynamodbStack(Stack):
             "aggregates":dynamo_aggs,
             "notifications":dynamo_notifications,
             "surgeons":dynamo_surgeons,
-            "hospitals":dynamo_hospitals
+            "hospitals":dynamo_hospitals,
+            "otp_staged": dynamo_otp_staged
         }
         

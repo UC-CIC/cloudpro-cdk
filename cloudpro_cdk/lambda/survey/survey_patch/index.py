@@ -21,8 +21,8 @@ TABLE_STATE_NAME=os.environ["TABLE_STATE"]
 
 CORS_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Origin': os.environ["CORS_ALLOW_UI"] if os.environ["LOCALHOST_ORIGIN"] == "" else os.environ["LOCALHOST_ORIGIN"],
-    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+    'Access-Control-Allow-Origin': os.environ["CORS_ALLOWED_ORIGIN"],
+    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PATCH'
 }
 
 
@@ -87,6 +87,7 @@ def sweep_to_complete( sub, db_payload, fields ):
                     if survey_payload["open_surveys"][idx][key][sdx]["sid"] == sid and survey_payload["open_surveys"][idx][key][sdx]["due"] == due_date:
                         closed_payload = survey_payload["open_surveys"][idx][key][sdx]
                         closed_payload["completed"] = True
+                        closed_payload["completed_date"] = datetime.datetime.strftime(datetime.datetime.today().date(), "%Y-%m-%dT%H:%M:%S")
                         store_key=key
                         survey_payload["open_surveys"][idx][key].pop(sdx)
                         #print("IDX=",idx)
@@ -122,11 +123,22 @@ def sweep_to_complete( sub, db_payload, fields ):
                         except:
                             pass
 
+                        completed_dt_str="1/1/1111"
+
+                        try:
+                            date_str=closed_payload["completed_date"]
+                            date_format="%Y-%m-%dT%H:%M:%S"
+                            date_obj=datetime.datetime.strptime(date_str,date_format)
+                            completed_dt_str = date_obj.strftime("%m/%d/%Y")
+                        except:
+                            pass
+
                         event_for_reporting = {
                             "sub":sub,
                             "survey":closed_payload["name"],
                             "date":report_dt_str,
-                            "t_score":float(t_score)
+                            "t_score":float(t_score),
+                            "completed_date": completed_dt_str
                         }
                         print(event_for_reporting)
                         eresponse = event_client.put_events(

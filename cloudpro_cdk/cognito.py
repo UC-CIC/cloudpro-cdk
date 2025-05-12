@@ -11,13 +11,13 @@ from constructs import Construct
 class CognitoStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, dynamodb_user_table,dynamodb_user_staged_table,**kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        COGNITO_POOL="cognito-up-cloudpro"
+        COGNITO_POOL="cognito-up-cloudpro-dev"
         ######################################################################################################
         # Custom Cognito Lambda's
         ######################################################################################################
         fn_cognito_define_auth_challenge = lambda_.Function(
-            self,"fn-cognito-define-auth-challenge",
-            description="cognito-define-auth-challenge", #microservice tag
+            self,"fn-cognito-define-auth-challenge-dev",
+            description="cognito-define-auth-challenge-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/cognito","cognito_define_auth_challenge")),
@@ -28,8 +28,8 @@ class CognitoStack(Stack):
             layers=[]
         ) 
         fn_cognito_create_auth_challenge = lambda_.Function(
-            self,"fn-cognito-create-auth-challenge",
-            description="cognito-create-auth-challenge", #microservice tag
+            self,"fn-cognito-create-auth-challenge-dev",
+            description="cognito-create-auth-challeng-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/cognito","cognito_create_auth_challenge")),
@@ -40,8 +40,8 @@ class CognitoStack(Stack):
             layers=[]
         )   
         fn_cognito_verify_auth_challenge = lambda_.Function(
-            self,"fn-cognito-verify-auth-challenge",
-            description="cognito-verify-auth-challenge-response", #microservice tag
+            self,"fn-cognito-verify-auth-challenge-dev",
+            description="cognito-verify-auth-challenge-response-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/cognito","cognito_verify_auth_challenge")),
@@ -56,8 +56,8 @@ class CognitoStack(Stack):
 
 
         fn_cognito_post_confirmation = lambda_.Function(
-            self,"fn-cognito-post-confirmation",
-            description="cognito-post-confirmation", #microservice tag
+            self,"fn-cognito-post-confirmation-dev",
+            description="cognito-post-confirmation-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/cognito","cognito_post_confirmation")),
@@ -74,8 +74,8 @@ class CognitoStack(Stack):
 
 
         fn_pre_sign_up = lambda_.Function(
-            self,"fn-pre-sign-up",
-            description="cognito-pre-signup", #microservice tag
+            self,"fn-pre-sign-up-dev",
+            description="cognito-pre-signup-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/cognito","cognito_pre_signup")),
@@ -89,7 +89,7 @@ class CognitoStack(Stack):
         ######################################################################################################
         # Cognito Configs
         ######################################################################################################
-        user_pool = cognito.UserPool(self, "cognito-up-cloudpro",
+        user_pool = cognito.UserPool(self, "cognito-up-cloudpro-dev",
             user_pool_name=COGNITO_POOL,
             sign_in_aliases=cognito.SignInAliases(username=False, email=True, phone=False),
             #auto_verify=cognito.AutoVerifiedAttrs(email=True, phone=True)
@@ -109,8 +109,14 @@ class CognitoStack(Stack):
                 post_confirmation=fn_cognito_post_confirmation
             ),
             custom_attributes={
-                "isEmployee": cognito.StringAttribute(mutable=True)
-            }
+                "isEmployee": cognito.StringAttribute(mutable=True),
+                "otp_method": cognito.StringAttribute(mutable=True)
+            },
+            mfa=cognito.Mfa.OPTIONAL,
+            mfa_second_factor=cognito.MfaSecondFactor(
+                sms=True,
+                otp=False
+            )
         )
         
         client_write_attributes = (cognito.ClientAttributes()).with_standard_attributes(
@@ -133,9 +139,10 @@ class CognitoStack(Stack):
             profile_picture=True,
             timezone=True,
             website=True
-        )
+        ).with_custom_attributes("otp_method")
+
         client = user_pool.add_client(
-            "customer-app-client",
+            "customer-app-client-dev",
             auth_flows=cognito.AuthFlow(
                 custom=True
             ),
@@ -143,13 +150,13 @@ class CognitoStack(Stack):
         )
 
 
-        cfn_user_pool_group = cognito.CfnUserPoolGroup(self, "users-up-group",
+        cfn_user_pool_group = cognito.CfnUserPoolGroup(self, "users-up-group-dev",
             user_pool_id=user_pool.user_pool_id,
             description="Patients",
             group_name="patients",
             precedence=123
         )
-        cfn_surgeon_pool_group = cognito.CfnUserPoolGroup(self, "surgeon-up-group",
+        cfn_surgeon_pool_group = cognito.CfnUserPoolGroup(self, "surgeon-up-group-dev",
             user_pool_id=user_pool.user_pool_id,
             description="Surgeons",
             group_name="surgeons",
@@ -158,15 +165,24 @@ class CognitoStack(Stack):
 
 
         # workaround to get past circular dependency
-        fn_cognito_verify_auth_challenge.role.attach_inline_policy(iam.Policy(self, "userpool-policy",
+        fn_cognito_verify_auth_challenge.role.attach_inline_policy(iam.Policy(self, "userpool-policy-dev",
             statements=[iam.PolicyStatement(
                 actions=["cognito-idp:AdminUpdateUserAttributes","cognito-idp:AdminListGroupsForUser","cognito-idp:AdminAddUserToGroup"],
                 resources=[user_pool.user_pool_arn]
             )]
         ))
-        fn_cognito_create_auth_challenge.role.attach_inline_policy(iam.Policy(self, "ses-policy",
+        fn_cognito_create_auth_challenge.role.attach_inline_policy(iam.Policy(self, "ses-policy-dev",
             statements=[iam.PolicyStatement(
                 actions=["ses:SendEmail"],
                 resources=["*"]
             )]
         ))
+
+        fn_cognito_create_auth_challenge.role.attach_inline_policy(iam.Policy(self, "sns-policy-dev",
+            statements=[iam.PolicyStatement(
+                actions=["sns:Publish"],
+                resources=["*"]
+            )]
+        ))
+
+        self.cognito_userpool = user_pool

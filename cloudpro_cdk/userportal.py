@@ -12,7 +12,7 @@ class UserPortal(Stack):
     def __init__(self,scope: Construct,  construct_id: str,  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        bucket_userportal=s3.Bucket(self, "bucket-userportal",
+        bucket_userportal=s3.Bucket(self, "bucket-userportal-dev",
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,

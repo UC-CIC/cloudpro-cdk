@@ -24,7 +24,7 @@ class CfrontUserPortal(Stack):
         )           
         main_cdn = cloudfront.Distribution(
             self,
-            "cfront-cloudpro",
+            "cfront-cloudpro-dev",
             default_behavior=cloudfront.BehaviorOptions(
                 origin=origins.S3Origin(bucket_userportal),
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,

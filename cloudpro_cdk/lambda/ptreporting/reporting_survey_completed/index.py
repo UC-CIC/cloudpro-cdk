@@ -13,7 +13,7 @@ table_name_aggregates=os.environ["TABLE_AGGREGATES"]
 
 
 
-def write_ptreporting( sub, survey, date, score ):
+def write_ptreporting( sub, survey, date, score, completed_date ):
     table = dynamodb.Table(table_name_pt_reporting)
 
     search_key = {
@@ -37,13 +37,15 @@ def write_ptreporting( sub, survey, date, score ):
                     found = True
                     found_idx = idx
                     break
+            if found:
+                break
         print(found)
         print(survey)
 
         if found:
-            survey_payload[found_idx][key].append({"date":date,"score":Decimal(score)})
+            survey_payload[found_idx][key].append({"date":date,"score":Decimal(score),"completed_date": completed_date})
         else:
-            survey_payload.append( { survey:[{"date":date,"score":Decimal(score)}] })
+            survey_payload.append( { survey:[{"date":date,"score":Decimal(score),"completed_date": completed_date}] })
         
         payload = {
             "sub":sub,
@@ -60,7 +62,8 @@ def write_ptreporting( sub, survey, date, score ):
                     survey: [
                         {
                             "date": date,
-                            "score": Decimal(score)
+                            "score": Decimal(score),
+                            "completed_date": completed_date
                         },
                     ]
                 }
@@ -95,14 +98,16 @@ def handler(event,context):
         "sub":"test",
         "survey":"Mobility",
         "date":"01/10/2023",
-        "t_score":81
+        "t_score":81,
+        "completed_date: "01/10/2023
     }
     '''
     source_sub = event["detail"]["sub"]
     source_survey = event["detail"]["survey"]
     source_date = event["detail"]["date"]
     source_tscore  = event["detail"]["t_score"]
-    write_ptreporting(sub=source_sub,survey=source_survey,date=source_date,score=source_tscore)
+    source_completed_date  = event["detail"]["completed_date"]
+    write_ptreporting(sub=source_sub,survey=source_survey,date=source_date,score=source_tscore,completed_date=source_completed_date)
 
     try:
         return {

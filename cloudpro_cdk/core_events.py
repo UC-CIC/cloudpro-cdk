@@ -27,8 +27,8 @@ class CoreEvents(Stack):
 
 
         fn_pro_state_init = lambda_.Function(
-            self,"fn-pro-state-init",
-            description="pro-state-init", #microservice tag
+            self,"fn-pro-state-init-dev",
+            description="pro-state-init-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/pro_state","pro_state_init")),
@@ -43,8 +43,8 @@ class CoreEvents(Stack):
         dynamodb_tables["questionnaire"].grant_read_data(fn_pro_state_init)
         dynamodb_tables["state"].grant_write_data(fn_pro_state_init)
 
-        sqs_propack_state_init_dlq = sqs.Queue(self,"sqs-propack-state-init-dlq")
-        rule_propack_init = events.Rule(self, "cdk-rule-propack-state-init",
+        sqs_propack_state_init_dlq = sqs.Queue(self,"sqs-propack-state-init-dlq-dev")
+        rule_propack_init = events.Rule(self, "cdk-rule-propack-state-init-dev",
             description="Rule to initialize a state for a user.",
             event_pattern=events.EventPattern(
                 source=[SOURCE_PRO_STATE_INIT],
@@ -64,8 +64,8 @@ class CoreEvents(Stack):
 
 
         fn_survey_completed = lambda_.Function(
-            self,"fn-reporting-survey-completed",
-            description="reporting-survey-completed", #microservice tag
+            self,"fn-reporting-survey-completed-dev",
+            description="reporting-survey-completed-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/ptreporting","reporting_survey_completed")),
@@ -80,8 +80,8 @@ class CoreEvents(Stack):
         dynamodb_tables["pt_reporting"].grant_read_write_data(fn_survey_completed)
         dynamodb_tables["aggregates"].grant_read_write_data(fn_survey_completed)
 
-        sqs_ptreport_dlq = sqs.Queue(self,"sqs-reporting-survey-complete-dlq")
-        rule_ptreport_complete = events.Rule(self, "cdk-rule-reporting-survey-complete",
+        sqs_ptreport_dlq = sqs.Queue(self,"sqs-reporting-survey-complete-dlq-dev")
+        rule_ptreport_complete = events.Rule(self, "cdk-rule-reporting-survey-complete-dev",
             description="Survey completed event.",
             event_pattern=events.EventPattern(
                 source=[SOURCE_PT_COMPLETE_SURVEY],
@@ -101,8 +101,8 @@ class CoreEvents(Stack):
 
 
         fn_notification_create= lambda_.Function(
-            self,"fn-notification-create",
-            description="notificatin-create", #microservice tag
+            self,"fn-notification-create-dev",
+            description="notificatin-create-dev", #microservice tag
             runtime=lambda_.Runtime.PYTHON_3_9,
             handler="index.handler",
             code=lambda_.Code.from_asset(os.path.join("cloudpro_cdk/lambda/notifications","create_notification")),
@@ -115,8 +115,8 @@ class CoreEvents(Stack):
 
         dynamodb_tables["notifications"].grant_read_write_data(fn_notification_create)
 
-        sqs_notification_dlq = sqs.Queue(self,"sqs-notifications-dlq")
-        rule_notification_create = events.Rule(self, "cdk-rule-notification-create",
+        sqs_notification_dlq = sqs.Queue(self,"sqs-notifications-dlq-dev")
+        rule_notification_create = events.Rule(self, "cdk-rule-notification-create-dev",
             description="Created notification.",
             event_pattern=events.EventPattern(
                 #source=[SOURCE_PT_COMPLETE_SURVEY],

@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9 # specify the Python version you need, such as 3.8, 3.9, etc.
+      nodejs: 18
+    commands:
+    - npm install -g aws-cdk
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install -r requirements.txt
+    # - cdk bootstrap --context layer_arn=DUMMY --context layer_boto_arn=DUMMY  --context XKEY=DUMMY --context debug_token=DUMMY
+    - chmod +x deploy.sh
+    - export DEPLOY_ENV=$ENV
+    - ./deploy.sh cdk-layers-stack-dev-$ENV
+    - ./deploy.sh cdk-dynamodb-stack-$ENV cdk-event-bus-stack-$ENV cdk-propack-stack-$ENV cdk-userportal-stack-$ENV cdk-cfront-userportal-stack-$ENV cdk-core-events-stack-$ENV cdk-cognito-stack-$ENV cdk-apig-stack-$ENV cdk-cfront-apig-stack-$ENV
+
+artifacts:
+  files:
+    - '**/*'
